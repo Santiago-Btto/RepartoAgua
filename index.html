@@ -61,11 +61,13 @@
     <small>Funciona offline y sincroniza con Firestore al reconectar.</small>
   </footer>
 
-  <script type="module" src="app.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
-    }
-  </script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js?v=2');
+    });
+  }
+</script>
+
 </body>
 </html>

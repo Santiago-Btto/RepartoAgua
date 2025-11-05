@@ -1,19 +1,15 @@
-import { firebaseConfig } from './firebase-config.js';
-
+import { firebaseConfig } from './firebase-config.v1.js';
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import {
   getFirestore, collection, addDoc, onSnapshot, enableIndexedDbPersistence,
   doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-// Init
+// Inicializar Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Offline (no rompe si falla)
-enableIndexedDbPersistence(db).catch(() =>
-  console.warn('Sin persistencia offline (incógnito o conflicto).')
-);
+enableIndexedDbPersistence(db).catch(() => console.warn('Sin persistencia offline (modo incógnito o conflicto).'));
 
 const qs = s => document.querySelector(s);
 const lista = qs('#lista');
@@ -43,33 +39,18 @@ qs('#formCliente')?.addEventListener('submit', async (e) => {
     f.reset();
   } catch (err) {
     console.error('[ERROR addDoc]', err);
-    alert('No se pudo guardar. Revisá Firestore Rules y la consola (F12).');
+    alert('No se pudo guardar. Revisá Firestore Rules.');
   }
 });
 
-// Cache/estado
 let clientesCache = [];
 const dias = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
 
-// Suscripción realtime
-try {
-  onSnapshot(
-    query(collection(db,'clientes'), orderBy('nombre')),
-    (snap) => {
-      clientesCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      console.log(`[SNAP] docs: ${clientesCache.length}`);
-      render();
-    },
-    (err) => {
-      console.error('[ERROR onSnapshot]', err);
-      alert('No puedo leer clientes. Revisá Rules/Conexión.');
-    }
-  );
-} catch (err) {
-  console.error('[ERROR suscripción]', err);
-}
+onSnapshot(query(collection(db,'clientes'), orderBy('nombre')), (snap) => {
+  clientesCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  render();
+}, (err) => console.error('[ERROR snapshot]', err));
 
-// Filtros/buscador
 ['search','fDia','fEstado'].forEach(id => {
   qs('#'+id)?.addEventListener('input', render);
   qs('#'+id)?.addEventListener('change', render);
@@ -102,7 +83,6 @@ function render(){
   for (const d of dias) {
     const grupo = filtrados.filter(c => c.diaEntrega === d);
     if (grupo.length === 0) continue;
-
     const h = document.createElement('h3'); h.textContent = d.toUpperCase();
     lista.appendChild(h);
 
@@ -110,18 +90,12 @@ function render(){
       const row = document.createElement('div'); row.className = 'item';
       const left = document.createElement('div');
       left.innerHTML = `<strong>${c.nombre}</strong> — ${c.estado} · ${c.direccion ?? ''} · ${c.telefono ?? ''}
-        · Stock: 20L ${c.stock20 ?? 0} · 12L ${c.stock12 ?? 0} · Sif ${c.stockSif ?? 0}
-        <span class='badge'>${c.id}</span>`;
+        · Stock: 20L ${c.stock20 ?? 0} · 12L ${c.stock12 ?? 0} · Sif ${c.stockSif ?? 0}`;
       const right = document.createElement('div');
       const btnEdit = Object.assign(document.createElement('button'), {textContent:'Editar', className:'btn-ghost'});
       const btnDel = Object.assign(document.createElement('button'), {textContent:'Eliminar', className:'btn-ghost btn-danger'});
       btnEdit.onclick = () => editarCliente(c.id, c);
-      btnDel.onclick = async () => {
-        if (confirm('¿Eliminar cliente?')) {
-          try { await deleteDoc(doc(db,'clientes',c.id)); }
-          catch (err) { console.error('[ERROR deleteDoc]', err); alert('No se pudo eliminar.'); }
-        }
-      };
+      btnDel.onclick = async () => { if (confirm('¿Eliminar cliente?')) await deleteDoc(doc(db,'clientes',c.id)); };
       right.append(btnEdit, btnDel);
       row.append(left, right);
       lista.appendChild(row);
@@ -139,10 +113,5 @@ async function editarCliente(id, c){
   const stock12 = Number(prompt('Stock 12 L', c.stock12 ?? 0) ?? c.stock12 ?? 0);
   const stockSif = Number(prompt('Stock Sifones', c.stockSif ?? 0) ?? c.stockSif ?? 0);
   const notas = prompt('Notas', c.notas ?? '') ?? c.notas;
-  try {
-    await updateDoc(doc(db,'clientes',id), { nombre, direccion, telefono, estado, diaEntrega, stock20, stock12, stockSif, notas });
-  } catch (err) {
-    console.error('[ERROR updateDoc]', err);
-    alert('No se pudo editar. Revisá Rules.');
-  }
+  await updateDoc(doc(db,'clientes',id), { nombre, direccion, telefono, estado, diaEntrega, stock20, stock12, stockSif, notas });
 }
