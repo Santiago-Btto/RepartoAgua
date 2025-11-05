@@ -24,7 +24,7 @@ function setSync(text){ syncMsg.textContent = text || ''; }
 window.addEventListener('online', ()=> setSync('Conectado • sincronizando...'));
 window.addEventListener('offline', ()=> setSync('Sin conexión (modo offline)'));
 
-// Crear
+// Crear cliente
 qs('#formCliente')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const f = e.target;
@@ -37,6 +37,8 @@ qs('#formCliente')?.addEventListener('submit', async (e) => {
     stock20: Number(f.stock20.value || 0),
     stock12: Number(f.stock12.value || 0),
     stockSif: Number(f.stockSif.value || 0),
+    dispenser: Number(f.dispenser.value || 0),
+    ordenVisita: Number(f.ordenVisita.value || 0),
     notas: f.notas.value.trim(),
     creadoEn: serverTimestamp(),
     lastModified: serverTimestamp()
@@ -59,7 +61,7 @@ const dias = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"
 
 // Realtime
 console.log('[SNAP] suscribiendo...');
-onSnapshot(query(collection(db,'clientes'), orderBy('nombre')), (snap) => {
+onSnapshot(query(collection(db,'clientes'), orderBy('ordenVisita', 'asc')), (snap) => {
   setSync('🔄 Sincronizando con Firestore...');
   clientesCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
   console.log('[SNAP] docs:', clientesCache.length);
@@ -73,7 +75,7 @@ onSnapshot(query(collection(db,'clientes'), orderBy('nombre')), (snap) => {
 qs('#btnRefresh')?.addEventListener('click', async ()=>{
   setSync('🔄 Actualizando...');
   // Pull simple (relee una vez); el realtime ya mantiene sync
-  const snap = await getDocs(query(collection(db,'clientes'), orderBy('nombre')));
+  const snap = await getDocs(query(collection(db,'clientes'), orderBy('ordenVisita', 'asc')));
   clientesCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
   render();
   setTimeout(()=> setSync(''), 800);
@@ -120,14 +122,14 @@ function render(){
   for (const d of dias) {
     const grupo = filtrados.filter(c => c.diaEntrega === d);
     if (grupo.length === 0) continue;
-    const h = document.createElement('h3'); h.textContent = d.toUpperCase();
+    const h = document.createElement('h3'); h.textContent = `${d.toUpperCase()} (${grupo.length} clientes)`;
     lista.appendChild(h);
 
     grupo.forEach(c => {
       const row = document.createElement('div'); row.className = 'item';
       const left = document.createElement('div');
       left.innerHTML = `<strong>${c.nombre}</strong> — ${c.estado} · ${c.direccion ?? ''} · ${c.telefono ?? ''}
-        · Stock: 20L ${c.stock20 ?? 0} · 12L ${c.stock12 ?? 0} · Sif ${c.stockSif ?? 0}
+        · Stock: 20L ${c.stock20 ?? 0} · 12L ${c.stock12 ?? 0} · Sif ${c.stockSif ?? 0} · Dispensers ${c.dispenser ?? 0}
         <br><small class="muted">Última mod: ${fmt(c.lastModified)}</small>`;
       const right = document.createElement('div');
       const btnEdit = Object.assign(document.createElement('button'), {textContent:'Editar', className:'btn-ghost'});
@@ -157,6 +159,8 @@ function openEditor(id, c){
   formEdit.stock20.value = Number(c.stock20 ?? 0);
   formEdit.stock12.value = Number(c.stock12 ?? 0);
   formEdit.stockSif.value = Number(c.stockSif ?? 0);
+  formEdit.dispenser.value = Number(c.dispenser ?? 0);
+  formEdit.ordenVisita.value = Number(c.ordenVisita ?? 1);
   formEdit.notas.value = c.notas || '';
   modal.classList.remove('hidden');
   modal.setAttribute('aria-hidden','false');
@@ -183,6 +187,8 @@ formEdit?.addEventListener('submit', async (e)=>{
     stock20: Number(f.stock20.value || 0),
     stock12: Number(f.stock12.value || 0),
     stockSif: Number(f.stockSif.value || 0),
+    dispenser: Number(f.dispenser.value || 0),
+    ordenVisita: Number(f.ordenVisita.value || 0),
     notas: f.notas.value.trim(),
     lastModified: serverTimestamp()
   };
