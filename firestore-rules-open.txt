@@ -1,4 +1,4 @@
-// SOLO PARA PRUEBAS (INSEGURO). Cambia esto luego a reglas seguras.
+// SOLO PARA PRUEBAS (INSEGURO). Cambia luego a reglas seguras.
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {

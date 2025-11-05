@@ -1,17 +1,21 @@
 *{box-sizing:border-box}html,body{margin:0;padding:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,'Helvetica Neue',Arial,'Noto Sans',sans-serif}
-:root{--bg:#0b1020;--card:#111827;--muted:#94a3b8;--text:#e5e7eb;--accent:#0ea5e9;--accent-700:#0369a1}
+:root{--bg:#0b1020;--card:#111827;--muted:#94a3b8;--text:#e5e7eb;--accent:#0ea5e9;--accent-700:#0369a1;--danger:#ef4444}
 body{background:linear-gradient(180deg,#0b1020,#0f172a 60%);color:var(--text);min-height:100vh}
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#0f172a;border-bottom:1px solid #1f2937;position:sticky;top:0;z-index:2}
 .topbar h1{margin:0;font-size:18px}
 .muted{color:#94a3b8}
-.container{max-width:820px;margin:18px auto;padding:0 12px;display:grid;gap:16px}
+.container{max-width:980px;margin:18px auto;padding:0 12px;display:grid;gap:16px}
 .card{background:var(--card);border:1px solid #1f2937;border-radius:16px;padding:14px 14px 18px}
 .card h2{margin:6px 4px 12px;font-size:18px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
 input,select,textarea,button{padding:10px;border-radius:12px;border:1px solid #334155;background:#0b1220;color:#e5e7eb}
 button{background:var(--accent);border:none;cursor:pointer}
 button:hover{background:var(--accent-700)}
-.list h3{margin:10px 0 6px 0;color:#93c5fd}
-.item{display:flex;justify-content:space-between;gap:8px;padding:8px;border:1px solid #1f2937;border-radius:12px;margin-bottom:6px;background:#0c1325}
+.list h3{margin:14px 0 6px 0;color:#93c5fd}
+.item{display:flex;justify-content:space-between;gap:8px;padding:10px;border:1px solid #1f2937;border-radius:12px;margin-bottom:6px;background:#0c1325;align-items:center}
 .badge{padding:2px 8px;border-radius:999px;font-size:12px;border:1px solid #334155;color:#93c5fd}
-.foot{padding:24px 16px;color:#94a3b8;text-align:center}
+.btn-ghost{background:transparent;border:1px solid #334155;color:#cbd5e1}
+.btn-danger{background:var(--danger);border-color:var(--danger)}
+small{color:#a3a3a3}
+.foot{padding:24px 16px;text-align:center}
+.empty{padding:12px;margin-top:8px}

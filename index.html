@@ -11,7 +11,7 @@
 <body>
   <header class="topbar">
     <h1>Reparto de Agua</h1>
-    <small class="muted">Sin inicio de sesión</small>
+    <small class="muted">Sin inicio de sesión · Realtime</small>
   </header>
 
   <main class="container">
@@ -36,7 +36,22 @@
 
     <section class="card">
       <h2>Clientes guardados</h2>
+
+      <div class="grid">
+        <input id="search" placeholder="Buscar por nombre, dirección o teléfono..." />
+        <select id="fDia">
+          <option value="todos">Todos los días</option>
+          <option>lunes</option><option>martes</option><option>miercoles</option>
+          <option>jueves</option><option>viernes</option><option>sabado</option><option>domingo</option>
+        </select>
+        <select id="fEstado">
+          <option value="todos">Todos</option>
+          <option>activo</option><option>pausado</option>
+        </select>
+      </div>
+
       <div id="lista" class="list"></div>
+      <div id="empty" class="empty muted" style="display:none">No hay clientes para mostrar.</div>
     </section>
   </main>
 

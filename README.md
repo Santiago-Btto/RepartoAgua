@@ -1,28 +1,20 @@
-# Reparto de Agua — SIN login (PWA + Firestore)
+# Reparto de Agua — SIN login (PWA + Firestore) — v2
 
-Esta variante no solicita inicio de sesión. **OJO**: las reglas de Firestore deben permitir acceso público (solo para pruebas).
+Mejoras:
+- Suscripción **realtime** (onSnapshot): ves cambios al instante sin refrescar.
+- **Buscador** por nombre/dirección/teléfono/notas.
+- Filtros por **día** y **estado**.
+- Render robusto con estado "vacío".
 
-## Reglas para pruebas (abiertas)
-En Firebase Console → Firestore → Rules, podés usar temporalmente:
+> Reglas para pruebas (abiertas, inseguras):
 ```
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /{document=**} {
-      allow read, write: if true; // INSEGURO, solo pruebas
+      allow read, write: if true; // INSEGURO
     }
   }
 }
 ```
-Después de probar, te recomiendo pasar a reglas seguras.
-
-## Configuración
-1. Crear proyecto en Firebase y Firestore.
-2. Pegar tu `firebaseConfig` en `firebase-config.js`.
-3. Servir por HTTP/HTTPS (no file://) para que funcione el service worker.
-
-## Funciones
-- Crear cliente.
-- Ver **Clientes guardados** agrupados por día.
-- Editar / Eliminar.
-- Offline + sincronización al volver Internet.
+Luego cambiá a reglas seguras.
