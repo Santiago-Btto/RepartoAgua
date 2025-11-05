@@ -1,20 +1,23 @@
 import { firebaseConfig } from './firebase-config.js';
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import {
   getFirestore, collection, addDoc, onSnapshot, enableIndexedDbPersistence,
   doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-// Init
+// Init Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
+// Habilitar modo offline
 enableIndexedDbPersistence(db).catch(() => console.warn('Sin persistencia offline (incógnito o conflicto).'));
 
 const qs = s => document.querySelector(s);
 const lista = qs('#lista');
 const empty = qs('#empty');
 
-// ---- Crear cliente (agrega campos de stock)
+// ---- Crear cliente (incluye stock)
 qs('#formCliente')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const f = e.target;
@@ -45,7 +48,7 @@ onSnapshot(query(collection(db,'clientes'), orderBy('nombre')), (snap) => {
   render();
 });
 
-// Filtros
+// Filtros/buscador
 ['search','fDia','fEstado'].forEach(id => {
   qs('#'+id)?.addEventListener('input', render);
   qs('#'+id)?.addEventListener('change', render);
@@ -75,12 +78,13 @@ function render(){
     return;
   } else empty.style.display = 'none';
 
-  // Agrupar por día
   for (const d of dias) {
     const grupo = filtrados.filter(c => c.diaEntrega === d);
     if (grupo.length === 0) continue;
+
     const h = document.createElement('h3'); h.textContent = d.toUpperCase();
     lista.appendChild(h);
+
     grupo.forEach(c => {
       const row = document.createElement('div'); row.className = 'item';
       const left = document.createElement('div');
@@ -99,7 +103,7 @@ function render(){
   }
 }
 
-// Edición incluye stock
+// Editar (incluye stock)
 async function editarCliente(id, c){
   const nombre = prompt('Nombre', c.nombre) ?? c.nombre;
   const direccion = prompt('Dirección', c.direccion ?? '') ?? c.direccion;

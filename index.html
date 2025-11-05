@@ -39,7 +39,6 @@
 
     <section class="card">
       <h2>Clientes guardados</h2>
-
       <div class="grid">
         <input id="search" placeholder="Buscar por nombre, dirección, teléfono o notas..." />
         <select id="fDia">
@@ -52,7 +51,6 @@
           <option>activo</option><option>pausado</option>
         </select>
       </div>
-
       <div id="lista" class="list"></div>
       <div id="empty" class="empty muted" style="display:none">No hay clientes para mostrar.</div>
     </section>
@@ -64,6 +62,7 @@
 
   <script type="module" src="app.js"></script>
   <script>
+    // Registrar/actualizar el Service Worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
     }
