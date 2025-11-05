@@ -14,60 +14,60 @@
     <small class="muted">Sin inicio de sesión · Realtime</small>
   </header>
 
-<main class="container">
-  <section class="card">
-    <h2>Crear cliente</h2>
-    <form id="formCliente" class="grid">
-      <input name="nombre" placeholder="Nombre" required />
-      <input name="direccion" placeholder="Dirección" />
-      <input name="telefono" placeholder="Teléfono" />
-      <select name="diaEntrega" required>
-        <option value="" disabled selected>Día de entrega</option>
-        <option>lunes</option><option>martes</option><option>miercoles</option>
-        <option>jueves</option><option>viernes</option><option>sabado</option><option>domingo</option>
-      </select>
-      <select name="estado" required>
-        <option>activo</option><option>pausado</option>
-      </select>
-      <input name="stock20" type="number" min="0" placeholder="Stock 20 L" />
-      <input name="stock12" type="number" min="0" placeholder="Stock 12 L" />
-      <input name="stockSif" type="number" min="0" placeholder="Stock Sifones" />
-      <textarea name="notas" placeholder="Notas (opcional)" rows="2"></textarea>
-      <button>Guardar cliente</button>
-    </form>
-  </section>
+  <main class="container">
+    <section class="card">
+      <h2>Crear cliente</h2>
+      <form id="formCliente" class="grid" autocomplete="off">
+        <input name="nombre" placeholder="Nombre" required />
+        <input name="direccion" placeholder="Dirección" />
+        <input name="telefono" placeholder="Teléfono" />
+        <select name="diaEntrega" required>
+          <option value="" disabled selected>Día de entrega</option>
+          <option>lunes</option><option>martes</option><option>miercoles</option>
+          <option>jueves</option><option>viernes</option><option>sabado</option><option>domingo</option>
+        </select>
+        <select name="estado" required>
+          <option selected>activo</option><option>pausado</option>
+        </select>
+        <input name="stock20" type="number" min="0" placeholder="Stock 20 L" />
+        <input name="stock12" type="number" min="0" placeholder="Stock 12 L" />
+        <input name="stockSif" type="number" min="0" placeholder="Stock Sifones" />
+        <textarea name="notas" placeholder="Notas (opcional)" rows="2"></textarea>
+        <button id="btnGuardar">Guardar cliente</button>
+      </form>
+      <div id="msg" class="toast" style="display:none"></div>
+    </section>
 
-  <section class="card">
-    <h2>Clientes guardados</h2>
-    <div class="grid">
-      <input id="search" placeholder="Buscar por nombre, dirección, teléfono o notas..." />
-      <select id="fDia">
-        <option value="todos" selected>Todos los días</option>
-        <option>lunes</option><option>martes</option><option>miercoles</option>
-        <option>jueves</option><option>viernes</option><option>sabado</option><option>domingo</option>
-      </select>
-      <select id="fEstado">
-        <option value="todos" selected>Todos</option>
-        <option>activo</option><option>pausado</option>
-      </select>
-    </div>
-    <div id="lista" class="list"></div>
-    <div id="empty" class="empty muted" style="display:none">No hay clientes para mostrar.</div>
-  </section>
-</main>
-
+    <section class="card">
+      <h2>Clientes guardados <span class="muted">(total: <span id="total">0</span>)</span></h2>
+      <div class="grid">
+        <input id="search" placeholder="Buscar por nombre, dirección, teléfono o notas..." />
+        <select id="fDia">
+          <option value="todos" selected>Todos los días</option>
+          <option>lunes</option><option>martes</option><option>miercoles</option>
+          <option>jueves</option><option>viernes</option><option>sabado</option><option>domingo</option>
+        </select>
+        <select id="fEstado">
+          <option value="todos" selected>Todos</option>
+          <option>activo</option><option>pausado</option>
+        </select>
+      </div>
+      <div id="lista" class="list"></div>
+      <div id="empty" class="empty muted" style="display:none">No hay clientes para mostrar.</div>
+    </section>
+  </main>
 
   <footer class="foot">
     <small>Funciona offline y sincroniza con Firestore al reconectar.</small>
   </footer>
 
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js?v=2');
-    });
-  }
-</script>
-
+  <script type="module" src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js?v=4');
+      });
+    }
+  </script>
 </body>
 </html>

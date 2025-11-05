@@ -1,4 +1,4 @@
-const CACHE = 'agua-nologin-fix-v2';
+const CACHE = 'agua-nologin-fix-v4';
 const SHELL = [
   './',
   './index.html',

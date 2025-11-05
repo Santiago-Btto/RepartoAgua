@@ -5,15 +5,18 @@ import {
   doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-// Inicializar Firebase
+console.log('[BOOT] Cargando app...');
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+console.log('[BOOT] Firebase iniciado para proyecto:', firebaseConfig.projectId);
 
-enableIndexedDbPersistence(db).catch(() => console.warn('Sin persistencia offline (modo incógnito o conflicto).'));
+enableIndexedDbPersistence(db).then(()=>console.log('[PERSIST] OK')).catch((e)=>console.warn('[PERSIST] no disponible', e?.message));
 
 const qs = s => document.querySelector(s);
 const lista = qs('#lista');
 const empty = qs('#empty');
+const totalEl = qs('#total');
+const toast = (t)=>{ const m=qs('#msg'); m.textContent=t; m.style.display='block'; setTimeout(()=>m.style.display='none', 2000); };
 
 // Crear cliente
 qs('#formCliente')?.addEventListener('submit', async (e) => {
@@ -31,14 +34,15 @@ qs('#formCliente')?.addEventListener('submit', async (e) => {
     notas: f.notas.value.trim(),
     creadoEn: serverTimestamp()
   };
-  if (!data.nombre || !data.diaEntrega) return alert('Completá nombre y día.');
+  if (!data.nombre || !data.diaEntrega) { alert('Completá nombre y día.'); return; }
 
   try {
     const ref = await addDoc(collection(db, 'clientes'), data);
-    console.log('[OK] Cliente creado', ref.id);
+    console.log('[ADD] OK', ref.id);
+    toast('Cliente guardado ✔');
     f.reset();
   } catch (err) {
-    console.error('[ERROR addDoc]', err);
+    console.error('[ADD] ERROR', err);
     alert('No se pudo guardar. Revisá Firestore Rules.');
   }
 });
@@ -46,10 +50,16 @@ qs('#formCliente')?.addEventListener('submit', async (e) => {
 let clientesCache = [];
 const dias = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
 
+// Realtime
+console.log('[SNAP] suscribiendo...');
 onSnapshot(query(collection(db,'clientes'), orderBy('nombre')), (snap) => {
   clientesCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  console.log('[SNAP] docs:', clientesCache.length);
   render();
-}, (err) => console.error('[ERROR snapshot]', err));
+}, (err) => {
+  console.error('[SNAP] ERROR', err);
+  alert('No puedo leer clientes. Revisá Reglas y Conexión.');
+});
 
 ['search','fDia','fEstado'].forEach(id => {
   qs('#'+id)?.addEventListener('input', render);
@@ -57,6 +67,7 @@ onSnapshot(query(collection(db,'clientes'), orderBy('nombre')), (snap) => {
 });
 
 function render(){
+  totalEl.textContent = String(clientesCache.length);
   const term = (qs('#search')?.value || '').toLowerCase();
   const fDia = qs('#fDia')?.value || 'todos';
   const fEstado = qs('#fEstado')?.value || 'todos';
