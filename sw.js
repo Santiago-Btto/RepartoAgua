@@ -1,4 +1,5 @@
-const CACHE = 'agua-nologin-fix-v4';
+// v5: solo cachea assets estáticos. No intercepta Firestore XHRs.
+const CACHE = 'agua-nologin-fix-v5';
 const SHELL = [
   './',
   './index.html',
@@ -22,6 +23,11 @@ self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
   if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
+
+  // Dejá pasar cualquier request a Firestore (gstatic/firebase/.. y https://firestore.googleapis.com) sin cachear
+  if (url.hostname.includes('googleapis.com') || url.hostname.includes('gstatic.com') || url.hostname.includes('firebaseio.com')) {
+    return; // no intercept
+  }
 
   e.respondWith(
     caches.match(e.request).then(cached =>

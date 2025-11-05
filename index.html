@@ -11,7 +11,10 @@
 <body>
   <header class="topbar">
     <h1>Reparto de Agua</h1>
-    <small class="muted">Sin inicio de sesión · Realtime</small>
+    <div class="actions">
+      <button id="btnRefresh" class="btn-ghost">🔁 Actualizar datos</button>
+      <small id="syncMsg" class="muted"></small>
+    </div>
   </header>
 
   <main class="container">
@@ -57,6 +60,34 @@
     </section>
   </main>
 
+  <!-- Modal de edición -->
+  <div id="modal" class="modal hidden" aria-hidden="true">
+    <div class="overlay"></div>
+    <div class="modal-card">
+      <h3>Editar cliente</h3>
+      <form id="formEdit" class="grid">
+        <input name="nombre" placeholder="Nombre" required />
+        <input name="direccion" placeholder="Dirección" />
+        <input name="telefono" placeholder="Teléfono" />
+        <select name="diaEntrega" required>
+          <option>lunes</option><option>martes</option><option>miercoles</option>
+          <option>jueves</option><option>viernes</option><option>sabado</option><option>domingo</option>
+        </select>
+        <select name="estado" required>
+          <option>activo</option><option>pausado</option>
+        </select>
+        <input name="stock20" type="number" min="0" placeholder="Stock 20 L" />
+        <input name="stock12" type="number" min="0" placeholder="Stock 12 L" />
+        <input name="stockSif" type="number" min="0" placeholder="Stock Sifones" />
+        <textarea name="notas" placeholder="Notas" rows="2"></textarea>
+        <div class="modal-actions">
+          <button type="button" id="btnCancel" class="btn-ghost">Cancelar</button>
+          <button type="submit" id="btnSaveEdit">Guardar cambios</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <footer class="foot">
     <small>Funciona offline y sincroniza con Firestore al reconectar.</small>
   </footer>
@@ -65,7 +96,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=4');
+        navigator.serviceWorker.register('./sw.js?v=5');
       });
     }
   </script>

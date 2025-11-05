@@ -2,7 +2,7 @@ import { firebaseConfig } from './firebase-config.v1.js';
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import {
   getFirestore, collection, addDoc, onSnapshot, enableIndexedDbPersistence,
-  doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy
+  doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy, getDocs
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
 console.log('[BOOT] Cargando app...');
@@ -16,9 +16,15 @@ const qs = s => document.querySelector(s);
 const lista = qs('#lista');
 const empty = qs('#empty');
 const totalEl = qs('#total');
-const toast = (t)=>{ const m=qs('#msg'); m.textContent=t; m.style.display='block'; setTimeout(()=>m.style.display='none', 2000); };
+const syncMsg = qs('#syncMsg');
+const toast = (t)=>{ const m=qs('#msg'); m.textContent=t; m.style.display='block'; setTimeout(()=>m.style.display='none', 2200); };
 
-// Crear cliente
+// Online/offline status
+function setSync(text){ syncMsg.textContent = text || ''; }
+window.addEventListener('online', ()=> setSync('Conectado • sincronizando...'));
+window.addEventListener('offline', ()=> setSync('Sin conexión (modo offline)'));
+
+// Crear
 qs('#formCliente')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const f = e.target;
@@ -32,7 +38,8 @@ qs('#formCliente')?.addEventListener('submit', async (e) => {
     stock12: Number(f.stock12.value || 0),
     stockSif: Number(f.stockSif.value || 0),
     notas: f.notas.value.trim(),
-    creadoEn: serverTimestamp()
+    creadoEn: serverTimestamp(),
+    lastModified: serverTimestamp()
   };
   if (!data.nombre || !data.diaEntrega) { alert('Completá nombre y día.'); return; }
 
@@ -53,18 +60,37 @@ const dias = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"
 // Realtime
 console.log('[SNAP] suscribiendo...');
 onSnapshot(query(collection(db,'clientes'), orderBy('nombre')), (snap) => {
+  setSync('🔄 Sincronizando con Firestore...');
   clientesCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
   console.log('[SNAP] docs:', clientesCache.length);
   render();
+  setTimeout(()=> setSync(''), 800);
 }, (err) => {
   console.error('[SNAP] ERROR', err);
   alert('No puedo leer clientes. Revisá Reglas y Conexión.');
+});
+
+qs('#btnRefresh')?.addEventListener('click', async ()=>{
+  setSync('🔄 Actualizando...');
+  // Pull simple (relee una vez); el realtime ya mantiene sync
+  const snap = await getDocs(query(collection(db,'clientes'), orderBy('nombre')));
+  clientesCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  render();
+  setTimeout(()=> setSync(''), 800);
 });
 
 ['search','fDia','fEstado'].forEach(id => {
   qs('#'+id)?.addEventListener('input', render);
   qs('#'+id)?.addEventListener('change', render);
 });
+
+function fmt(ts){
+  if (!ts) return '';
+  try {
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toLocaleString();
+  } catch { return ''; }
+}
 
 function render(){
   totalEl.textContent = String(clientesCache.length);
@@ -101,11 +127,12 @@ function render(){
       const row = document.createElement('div'); row.className = 'item';
       const left = document.createElement('div');
       left.innerHTML = `<strong>${c.nombre}</strong> — ${c.estado} · ${c.direccion ?? ''} · ${c.telefono ?? ''}
-        · Stock: 20L ${c.stock20 ?? 0} · 12L ${c.stock12 ?? 0} · Sif ${c.stockSif ?? 0}`;
+        · Stock: 20L ${c.stock20 ?? 0} · 12L ${c.stock12 ?? 0} · Sif ${c.stockSif ?? 0}
+        <br><small class="muted">Última mod: ${fmt(c.lastModified)}</small>`;
       const right = document.createElement('div');
       const btnEdit = Object.assign(document.createElement('button'), {textContent:'Editar', className:'btn-ghost'});
       const btnDel = Object.assign(document.createElement('button'), {textContent:'Eliminar', className:'btn-ghost btn-danger'});
-      btnEdit.onclick = () => editarCliente(c.id, c);
+      btnEdit.onclick = () => openEditor(c.id, c);
       btnDel.onclick = async () => { if (confirm('¿Eliminar cliente?')) await deleteDoc(doc(db,'clientes',c.id)); };
       right.append(btnEdit, btnDel);
       row.append(left, right);
@@ -114,15 +141,57 @@ function render(){
   }
 }
 
-async function editarCliente(id, c){
-  const nombre = prompt('Nombre', c.nombre) ?? c.nombre;
-  const direccion = prompt('Dirección', c.direccion ?? '') ?? c.direccion;
-  const telefono = prompt('Teléfono', c.telefono ?? '') ?? c.telefono;
-  const estado = prompt('Estado (activo/pausado)', c.estado) ?? c.estado;
-  const diaEntrega = prompt('Día (lunes..domingo)', c.diaEntrega) ?? c.diaEntrega;
-  const stock20 = Number(prompt('Stock 20 L', c.stock20 ?? 0) ?? c.stock20 ?? 0);
-  const stock12 = Number(prompt('Stock 12 L', c.stock12 ?? 0) ?? c.stock12 ?? 0);
-  const stockSif = Number(prompt('Stock Sifones', c.stockSif ?? 0) ?? c.stockSif ?? 0);
-  const notas = prompt('Notas', c.notas ?? '') ?? c.notas;
-  await updateDoc(doc(db,'clientes',id), { nombre, direccion, telefono, estado, diaEntrega, stock20, stock12, stockSif, notas });
+// ==== Modal de edición ====
+let editingId = null;
+const modal = qs('#modal');
+const formEdit = qs('#formEdit');
+const btnCancel = qs('#btnCancel');
+
+function openEditor(id, c){
+  editingId = id;
+  formEdit.nombre.value = c.nombre || '';
+  formEdit.direccion.value = c.direccion || '';
+  formEdit.telefono.value = c.telefono || '';
+  formEdit.diaEntrega.value = c.diaEntrega || 'lunes';
+  formEdit.estado.value = c.estado || 'activo';
+  formEdit.stock20.value = Number(c.stock20 ?? 0);
+  formEdit.stock12.value = Number(c.stock12 ?? 0);
+  formEdit.stockSif.value = Number(c.stockSif ?? 0);
+  formEdit.notas.value = c.notas || '';
+  modal.classList.remove('hidden');
+  modal.setAttribute('aria-hidden','false');
 }
+
+btnCancel?.addEventListener('click', closeEditor);
+modal?.querySelector('.overlay')?.addEventListener('click', closeEditor);
+function closeEditor(){
+  modal.classList.add('hidden');
+  modal.setAttribute('aria-hidden','true');
+  editingId = null;
+}
+
+formEdit?.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+  if (!editingId) return;
+  const f = e.target;
+  const payload = {
+    nombre: f.nombre.value.trim(),
+    direccion: f.direccion.value.trim(),
+    telefono: f.telefono.value.trim(),
+    diaEntrega: f.diaEntrega.value,
+    estado: f.estado.value,
+    stock20: Number(f.stock20.value || 0),
+    stock12: Number(f.stock12.value || 0),
+    stockSif: Number(f.stockSif.value || 0),
+    notas: f.notas.value.trim(),
+    lastModified: serverTimestamp()
+  };
+  try {
+    await updateDoc(doc(db,'clientes',editingId), payload);
+    toast('Cliente actualizado ✔');
+    closeEditor();
+  } catch(err){
+    console.error('[EDIT] ERROR', err);
+    alert('No se pudo actualizar. Revisá Rules.');
+  }
+});
