@@ -1,41 +1,35 @@
 /* Corregir la disposición de los formularios */
 .grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
-  gap: 10px;
+  grid-template-columns: repeat(2, 1fr); /* Dos columnas */
+  gap: 12px;
 }
 
 input, select, textarea {
-  width: 100%;  /* Asegurar que los campos ocupen el 100% del ancho disponible */
+  width: 100%;  /* Asegura que los campos ocupen el 100% del ancho disponible */
 }
 
 button {
-  grid-column: span 5;  /* El botón de Guardar ocupa toda la fila */
+  grid-column: span 2;  /* El botón de Guardar ocupa toda la fila */
 }
 
-.card {
-  padding: 16px;
-}
-
-h2 {
-  font-size: 20px;
-}
-
-/* Estilo para el modal */
+/* Estilo para los formularios de edición */
 .modal-card {
-  width: 100%; /* Asegurar que el modal ocupe un ancho apropiado */
+  width: 100%; /* Asegura que el modal ocupe un ancho apropiado */
   max-width: 800px; /* Definir un máximo ancho */
   padding: 20px;
 }
 
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
+/* Hacer que las secciones del cliente se vean mejor */
+.card h2 {
+  font-size: 20px;
+  margin-bottom: 10px;
 }
 
-.modal input, .modal select, .modal textarea {
-  width: calc(100% - 20px); /* Rellenar todo el ancho pero con márgenes */
+.grid input,
+.grid select,
+.grid textarea {
+  margin-bottom: 10px;
 }
 
 /* Ajustar los elementos de la lista de clientes */
@@ -73,15 +67,4 @@ h2 {
 
 .item-header button:hover {
   background: var(--accent-700);
-}
-
-.dropdown-content {
-  display: none;
-  flex-direction: column;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-.dropdown-content.show {
-  display: flex;
 }
