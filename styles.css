@@ -1,6 +1,87 @@
-/* Modificaciones para el diseño del menú desplegable y el modal */
-.item .dropdown-content { display: none; flex-direction: column; gap: 8px; }
-.item .dropdown-content.show { display: flex; }
-.item-header button { background: var(--accent); color: white; border-radius: 8px; padding: 8px; cursor: pointer; }
-.item-header button:hover { background: var(--accent-700); }
-.modal .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
+/* Corregir la disposición de los formularios */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  gap: 10px;
+}
+
+input, select, textarea {
+  width: 100%;  /* Asegurar que los campos ocupen el 100% del ancho disponible */
+}
+
+button {
+  grid-column: span 5;  /* El botón de Guardar ocupa toda la fila */
+}
+
+.card {
+  padding: 16px;
+}
+
+h2 {
+  font-size: 20px;
+}
+
+/* Estilo para el modal */
+.modal-card {
+  width: 100%; /* Asegurar que el modal ocupe un ancho apropiado */
+  max-width: 800px; /* Definir un máximo ancho */
+  padding: 20px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.modal input, .modal select, .modal textarea {
+  width: calc(100% - 20px); /* Rellenar todo el ancho pero con márgenes */
+}
+
+/* Ajustar los elementos de la lista de clientes */
+.list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.item {
+  background-color: var(--card);
+  padding: 12px;
+  width: 100%;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.item-header button {
+  background: var(--accent);
+  color: white;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.item-header button:hover {
+  background: var(--accent-700);
+}
+
+.dropdown-content {
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.dropdown-content.show {
+  display: flex;
+}
