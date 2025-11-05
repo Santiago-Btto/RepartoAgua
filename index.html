@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Reparto de Agua — PWA</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#0ea5e9" />
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Reparto de Agua</h1>
+    <div class="userbox">
+      <span id="user">No logueado</span>
+      <button id="login">Entrar</button>
+      <button id="logout" class="ghost">Salir</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card">
+      <h2>Nuevo cliente</h2>
+      <form id="formCliente" class="grid">
+        <input name="nombre" placeholder="Nombre" required />
+        <input name="direccion" placeholder="Dirección" />
+        <input name="telefono" placeholder="Teléfono" />
+        <select name="diaEntrega" required>
+          <option value="" disabled selected>Día de entrega</option>
+          <option>lunes</option><option>martes</option><option>miercoles</option>
+          <option>jueves</option><option>viernes</option><option>sabado</option><option>domingo</option>
+        </select>
+        <select name="estado" required>
+          <option>activo</option><option>pausado</option>
+        </select>
+        <textarea name="notas" placeholder="Notas (opcional)" rows="2"></textarea>
+        <button>Guardar cliente</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>Clientes por día</h2>
+      <div id="lista" class="list"></div>
+    </section>
+
+    <section class="card">
+      <h2>Registrar entrega</h2>
+      <form id="formEntrega" class="grid">
+        <input name="clienteId" placeholder="ID de cliente" required />
+        <input name="c20" type="number" placeholder="Bidones 20L" min="0" />
+        <input name="c12" type="number" placeholder="Bidones 12L" min="0" />
+        <input name="sifones" type="number" placeholder="Sifones" min="0" />
+        <input name="obs" placeholder="Observación" />
+        <button>Guardar entrega</button>
+      </form>
+    </section>
+
+    <section class="card">
+      <h2>Reportes rápidos</h2>
+      <form id="formReporte" class="grid">
+        <input name="desde" type="date" required />
+        <input name="hasta" type="date" required />
+        <button>Calcular</button>
+      </form>
+      <pre id="reporteOut" class="mono"></pre>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <small>Funciona offline. Al reconectar, sincroniza con la nube (Firestore).</small>
+  </footer>
+
+  <script type="module" src="app.js"></script>
+  <script>
+    // Registrar Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js');
+      });
+    }
+  </script>
+</body>
+</html>
