@@ -1,20 +1,10 @@
-# Reparto de Agua — SIN login (PWA + Firestore) — v2
+# Reparto de Agua — SIN login (PWA + Firestore) — v3
 
-Mejoras:
-- Suscripción **realtime** (onSnapshot): ves cambios al instante sin refrescar.
-- **Buscador** por nombre/dirección/teléfono/notas.
-- Filtros por **día** y **estado**.
-- Render robusto con estado "vacío".
+Novedades:
+- Muestra el cliente **apenas lo guardás** (onSnapshot en tiempo real).
+- **Buscador** y **filtros** (día y estado).
+- Campos de **stock**: 20 L, 12 L y sifones.
+- **Editar** incluye los stock.
+- Offline + sincronización automática.
 
-> Reglas para pruebas (abiertas, inseguras):
-```
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if true; // INSEGURO
-    }
-  }
-}
-```
-Luego cambiá a reglas seguras.
+Recuerda: reglas abiertas solo para pruebas. Luego te paso reglas más seguras.

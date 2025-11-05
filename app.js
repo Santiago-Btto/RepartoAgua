@@ -14,7 +14,7 @@ const qs = s => document.querySelector(s);
 const lista = qs('#lista');
 const empty = qs('#empty');
 
-// ---- Crear cliente
+// ---- Crear cliente (agrega campos de stock)
 qs('#formCliente')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const f = e.target;
@@ -24,6 +24,9 @@ qs('#formCliente')?.addEventListener('submit', async (e) => {
     telefono: f.telefono.value.trim(),
     estado: f.estado.value,
     diaEntrega: f.diaEntrega.value,
+    stock20: Number(f.stock20.value || 0),
+    stock12: Number(f.stock12.value || 0),
+    stockSif: Number(f.stockSif.value || 0),
     notas: f.notas.value.trim(),
     creadoEn: serverTimestamp()
   };
@@ -81,7 +84,9 @@ function render(){
     grupo.forEach(c => {
       const row = document.createElement('div'); row.className = 'item';
       const left = document.createElement('div');
-      left.innerHTML = `<strong>${c.nombre}</strong> — ${c.estado} · ${c.direccion ?? ''} · ${c.telefono ?? ''} <span class='badge'>${c.id}</span>`;
+      left.innerHTML = `<strong>${c.nombre}</strong> — ${c.estado} · ${c.direccion ?? ''} · ${c.telefono ?? ''}
+        · Stock: 20L ${c.stock20 ?? 0} · 12L ${c.stock12 ?? 0} · Sif ${c.stockSif ?? 0}
+        <span class='badge'>${c.id}</span>`;
       const right = document.createElement('div');
       const btnEdit = Object.assign(document.createElement('button'), {textContent:'Editar', className:'btn-ghost'});
       const btnDel = Object.assign(document.createElement('button'), {textContent:'Eliminar', className:'btn-ghost btn-danger'});
@@ -94,13 +99,16 @@ function render(){
   }
 }
 
+// Edición incluye stock
 async function editarCliente(id, c){
-  // Dialog simple con selects válidos (evita errores de tipeo)
   const nombre = prompt('Nombre', c.nombre) ?? c.nombre;
   const direccion = prompt('Dirección', c.direccion ?? '') ?? c.direccion;
   const telefono = prompt('Teléfono', c.telefono ?? '') ?? c.telefono;
   const estado = prompt('Estado (activo/pausado)', c.estado) ?? c.estado;
   const diaEntrega = prompt('Día (lunes..domingo)', c.diaEntrega) ?? c.diaEntrega;
+  const stock20 = Number(prompt('Stock 20 L', c.stock20 ?? 0) ?? c.stock20 ?? 0);
+  const stock12 = Number(prompt('Stock 12 L', c.stock12 ?? 0) ?? c.stock12 ?? 0);
+  const stockSif = Number(prompt('Stock Sifones', c.stockSif ?? 0) ?? c.stockSif ?? 0);
   const notas = prompt('Notas', c.notas ?? '') ?? c.notas;
-  await updateDoc(doc(db,'clientes',id), { nombre, direccion, telefono, estado, diaEntrega, notas });
+  await updateDoc(doc(db,'clientes',id), { nombre, direccion, telefono, estado, diaEntrega, stock20, stock12, stockSif, notas });
 }

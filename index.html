@@ -29,6 +29,9 @@
         <select name="estado" required>
           <option>activo</option><option>pausado</option>
         </select>
+        <input name="stock20" type="number" min="0" placeholder="Stock 20 L" />
+        <input name="stock12" type="number" min="0" placeholder="Stock 12 L" />
+        <input name="stockSif" type="number" min="0" placeholder="Stock Sifones" />
         <textarea name="notas" placeholder="Notas (opcional)" rows="2"></textarea>
         <button>Guardar cliente</button>
       </form>
@@ -38,14 +41,14 @@
       <h2>Clientes guardados</h2>
 
       <div class="grid">
-        <input id="search" placeholder="Buscar por nombre, dirección o teléfono..." />
+        <input id="search" placeholder="Buscar por nombre, dirección, teléfono o notas..." />
         <select id="fDia">
-          <option value="todos">Todos los días</option>
+          <option value="todos" selected>Todos los días</option>
           <option>lunes</option><option>martes</option><option>miercoles</option>
           <option>jueves</option><option>viernes</option><option>sabado</option><option>domingo</option>
         </select>
         <select id="fEstado">
-          <option value="todos">Todos</option>
+          <option value="todos" selected>Todos</option>
           <option>activo</option><option>pausado</option>
         </select>
       </div>
