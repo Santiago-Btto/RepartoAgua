@@ -6,18 +6,20 @@ import {
   doc, updateDoc, deleteDoc, serverTimestamp, query, orderBy
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-// Init Firebase
+// Init
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Habilitar modo offline
-enableIndexedDbPersistence(db).catch(() => console.warn('Sin persistencia offline (incógnito o conflicto).'));
+// Offline (no rompe si falla)
+enableIndexedDbPersistence(db).catch(() =>
+  console.warn('Sin persistencia offline (incógnito o conflicto).')
+);
 
 const qs = s => document.querySelector(s);
 const lista = qs('#lista');
 const empty = qs('#empty');
 
-// ---- Crear cliente (incluye stock)
+// Crear cliente
 qs('#formCliente')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const f = e.target;
@@ -34,19 +36,38 @@ qs('#formCliente')?.addEventListener('submit', async (e) => {
     creadoEn: serverTimestamp()
   };
   if (!data.nombre || !data.diaEntrega) return alert('Completá nombre y día.');
-  await addDoc(collection(db, 'clientes'), data);
-  f.reset();
+
+  try {
+    const ref = await addDoc(collection(db, 'clientes'), data);
+    console.log('[OK] Cliente creado', ref.id);
+    f.reset();
+  } catch (err) {
+    console.error('[ERROR addDoc]', err);
+    alert('No se pudo guardar. Revisá Firestore Rules y la consola (F12).');
+  }
 });
 
-// ---- Cache y render
+// Cache/estado
 let clientesCache = [];
 const dias = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
 
-// Suscripción en tiempo real (ordenado por nombre)
-onSnapshot(query(collection(db,'clientes'), orderBy('nombre')), (snap) => {
-  clientesCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  render();
-});
+// Suscripción realtime
+try {
+  onSnapshot(
+    query(collection(db,'clientes'), orderBy('nombre')),
+    (snap) => {
+      clientesCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      console.log(`[SNAP] docs: ${clientesCache.length}`);
+      render();
+    },
+    (err) => {
+      console.error('[ERROR onSnapshot]', err);
+      alert('No puedo leer clientes. Revisá Rules/Conexión.');
+    }
+  );
+} catch (err) {
+  console.error('[ERROR suscripción]', err);
+}
 
 // Filtros/buscador
 ['search','fDia','fEstado'].forEach(id => {
@@ -95,7 +116,12 @@ function render(){
       const btnEdit = Object.assign(document.createElement('button'), {textContent:'Editar', className:'btn-ghost'});
       const btnDel = Object.assign(document.createElement('button'), {textContent:'Eliminar', className:'btn-ghost btn-danger'});
       btnEdit.onclick = () => editarCliente(c.id, c);
-      btnDel.onclick = async () => { if (confirm('¿Eliminar cliente?')) { await deleteDoc(doc(db,'clientes',c.id)); } };
+      btnDel.onclick = async () => {
+        if (confirm('¿Eliminar cliente?')) {
+          try { await deleteDoc(doc(db,'clientes',c.id)); }
+          catch (err) { console.error('[ERROR deleteDoc]', err); alert('No se pudo eliminar.'); }
+        }
+      };
       right.append(btnEdit, btnDel);
       row.append(left, right);
       lista.appendChild(row);
@@ -103,7 +129,6 @@ function render(){
   }
 }
 
-// Editar (incluye stock)
 async function editarCliente(id, c){
   const nombre = prompt('Nombre', c.nombre) ?? c.nombre;
   const direccion = prompt('Dirección', c.direccion ?? '') ?? c.direccion;
@@ -114,5 +139,10 @@ async function editarCliente(id, c){
   const stock12 = Number(prompt('Stock 12 L', c.stock12 ?? 0) ?? c.stock12 ?? 0);
   const stockSif = Number(prompt('Stock Sifones', c.stockSif ?? 0) ?? c.stockSif ?? 0);
   const notas = prompt('Notas', c.notas ?? '') ?? c.notas;
-  await updateDoc(doc(db,'clientes',id), { nombre, direccion, telefono, estado, diaEntrega, stock20, stock12, stockSif, notas });
+  try {
+    await updateDoc(doc(db,'clientes',id), { nombre, direccion, telefono, estado, diaEntrega, stock20, stock12, stockSif, notas });
+  } catch (err) {
+    console.error('[ERROR updateDoc]', err);
+    alert('No se pudo editar. Revisá Rules.');
+  }
 }
