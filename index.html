@@ -11,16 +11,12 @@
 <body>
   <header class="topbar">
     <h1>Reparto de Agua</h1>
-    <div class="userbox">
-      <span id="user">No logueado</span>
-      <button id="login">Entrar</button>
-      <button id="logout" class="ghost">Salir</button>
-    </div>
+    <small class="muted">Sin inicio de sesión</small>
   </header>
 
   <main class="container">
     <section class="card">
-      <h2>Nuevo cliente</h2>
+      <h2>Crear cliente</h2>
       <form id="formCliente" class="grid">
         <input name="nombre" placeholder="Nombre" required />
         <input name="direccion" placeholder="Dirección" />
@@ -39,44 +35,19 @@
     </section>
 
     <section class="card">
-      <h2>Clientes por día</h2>
+      <h2>Clientes guardados</h2>
       <div id="lista" class="list"></div>
-    </section>
-
-    <section class="card">
-      <h2>Registrar entrega</h2>
-      <form id="formEntrega" class="grid">
-        <input name="clienteId" placeholder="ID de cliente" required />
-        <input name="c20" type="number" placeholder="Bidones 20L" min="0" />
-        <input name="c12" type="number" placeholder="Bidones 12L" min="0" />
-        <input name="sifones" type="number" placeholder="Sifones" min="0" />
-        <input name="obs" placeholder="Observación" />
-        <button>Guardar entrega</button>
-      </form>
-    </section>
-
-    <section class="card">
-      <h2>Reportes rápidos</h2>
-      <form id="formReporte" class="grid">
-        <input name="desde" type="date" required />
-        <input name="hasta" type="date" required />
-        <button>Calcular</button>
-      </form>
-      <pre id="reporteOut" class="mono"></pre>
     </section>
   </main>
 
   <footer class="foot">
-    <small>Funciona offline. Al reconectar, sincroniza con la nube (Firestore).</small>
+    <small>Funciona offline y sincroniza con Firestore al reconectar.</small>
   </footer>
 
   <script type="module" src="app.js"></script>
   <script>
-    // Registrar Service Worker
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js');
-      });
+      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js'));
     }
   </script>
 </body>

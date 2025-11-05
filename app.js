@@ -1,45 +1,17 @@
 import { firebaseConfig } from './firebase-config.js';
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
 import {
-  getFirestore, collection, addDoc, getDocs, getDoc, doc, updateDoc, deleteDoc,
-  query, where, orderBy, enableIndexedDbPersistence, serverTimestamp
+  getFirestore, collection, addDoc, getDocs, query, where, orderBy,
+  enableIndexedDbPersistence, doc, updateDoc, deleteDoc, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-import {
-  getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
 
-// Init
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const auth = getAuth(app);
+enableIndexedDbPersistence(db).catch(() => console.warn('Sin persistencia offline (incógnito o conflicto).'));
 
-// Offline
-enableIndexedDbPersistence(db).catch(() => console.warn("Sin persistencia offline (modo incógnito o conflicto)."));
-
-const qs = (s) => document.querySelector(s);
+const qs = s => document.querySelector(s);
 const lista = qs('#lista');
-const loginBtn = qs('#login');
-const logoutBtn = qs('#logout');
-const userSpan = qs('#user');
 
-// Auth
-const provider = new GoogleAuthProvider();
-
-loginBtn?.addEventListener('click', async () => {
-  try { await signInWithPopup(auth, provider); } catch(e){ alert(e.message); }
-});
-logoutBtn?.addEventListener('click', async () => { await signOut(auth); });
-
-onAuthStateChanged(auth, (user) => {
-  userSpan.textContent = user ? user.email : 'No logueado';
-  loginBtn.style.display = user ? 'none' : 'inline-block';
-  logoutBtn.style.display = user ? 'inline-block' : 'none';
-  if (user) cargarClientes();
-  else lista.innerHTML = '<small>Iniciá sesión para ver datos.</small>';
-});
-
-// Crear cliente
 qs('#formCliente')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const f = e.target;
@@ -58,7 +30,6 @@ qs('#formCliente')?.addEventListener('submit', async (e) => {
   cargarClientes();
 });
 
-// Pintar clientes por día con acciones (editar/eliminar)
 async function cargarClientes(){
   const dias = ["lunes","martes","miercoles","jueves","viernes","sabado","domingo"];
   lista.innerHTML = "";
@@ -72,10 +43,10 @@ async function cargarClientes(){
       const c = docu.data(); const id = docu.id;
       const row = document.createElement('div'); row.className = 'item';
       const left = document.createElement('div');
-      left.innerHTML = `<strong>${c.nombre}</strong> — ${c.estado} · ${c.direccion ?? ''} <span class="badge">${id}</span>`;
+      left.innerHTML = `<strong>${c.nombre}</strong> — ${c.estado} · ${c.direccion ?? ''} <span class='badge'>${id}</span>`;
       const right = document.createElement('div');
-      const btnEdit = Object.assign(document.createElement('button'), {textContent:'Editar', className:'ghost'});
-      const btnDel = Object.assign(document.createElement('button'), {textContent:'Eliminar', className:'ghost'});
+      const btnEdit = Object.assign(document.createElement('button'), {textContent:'Editar'});
+      const btnDel = Object.assign(document.createElement('button'), {textContent:'Eliminar'});
       btnEdit.onclick = () => editarCliente(id, c);
       btnDel.onclick = async () => { if (confirm('¿Eliminar cliente?')) { await deleteDoc(doc(db,'clientes',id)); cargarClientes(); } };
       right.append(btnEdit, btnDel);
@@ -96,41 +67,4 @@ async function editarCliente(id, c){
   cargarClientes();
 }
 
-// Entregas
-qs('#formEntrega')?.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const f = e.target;
-  const data = {
-    clienteId: f.clienteId.value.trim(),
-    fecha: new Date(),
-    cant20L: +f.c20.value || 0,
-    cant12L: +f.c12.value || 0,
-    sifones: +f.sifones.value || 0,
-    observacion: f.obs.value.trim()
-  };
-  if (!data.clienteId) return alert('Falta ID de cliente');
-  await addDoc(collection(db,'entregas'), data);
-  f.reset();
-  alert('Entrega registrada');
-});
-
-// Reportes simples (rango de fechas)
-qs('#formReporte')?.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const f = e.target;
-  const desde = new Date(f.desde.value);
-  const hasta = new Date(f.hasta.value);
-  if (isNaN(+desde) || isNaN(+hasta)) return alert('Fechas inválidas');
-  // Cliente-side: traemos todas las entregas y filtramos (para demo).
-  const snap = await getDocs(collection(db,'entregas'));
-  let total20 = 0, total12 = 0, totalsif = 0, n = 0;
-  snap.forEach(d => {
-    const it = d.data();
-    const t = it.fecha?.toDate ? it.fecha.toDate() : new Date(it.fecha);
-    if (t >= desde && t <= hasta) {
-      total20 += +it.cant20L||0; total12 += +it.cant12L||0; totalsif += +it.sifones||0; n++;
-    }
-  });
-  qs('#reporteOut').textContent =
-    `Entregas en rango: ${n}\nTotal 20L: ${total20}\nTotal 12L: ${total12}\nSifones: ${totalsif}`;
-});
+cargarClientes();

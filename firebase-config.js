@@ -1,8 +1,9 @@
+// Pegá tu configuración aquí:
 export const firebaseConfig = {
-  apiKey: "AIzaSyAXXXXXXX",
-  authDomain: "repartoagua.firebaseapp.com",
-  projectId: "repartoagua",
-  storageBucket: "repartoagua.appspot.com",
-  messagingSenderId: "1234567890",
-  appId: "1:1234567890:web:abcdef123456"
+  apiKey: "TU_API_KEY",
+  authDomain: "tu-app.firebaseapp.com",
+  projectId: "tu-app",
+  storageBucket: "tu-app.appspot.com",
+  messagingSenderId: "000000000000",
+  appId: "1:000000000000:web:XXXXXXXXXXXXXX"
 };
