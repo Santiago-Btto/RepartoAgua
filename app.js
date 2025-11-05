@@ -10,7 +10,16 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 console.log('[BOOT] Firebase iniciado para proyecto:', firebaseConfig.projectId);
 
-enableIndexedDbPersistence(db).then(() => console.log('[PERSIST] OK')).catch((e) => console.warn('[PERSIST] no disponible', e?.message));
+enableIndexedDbPersistence(db, { synchronizeTabs: true })
+  .then(() => console.log('[PERSIST] Persistencia habilitada'))
+  .catch((e) => {
+    if (e.code === 'failed-precondition') {
+      console.warn('[PERSIST] No se puede habilitar persistencia debido a múltiples pestañas abiertas');
+    } else if (e.code === 'unimplemented') {
+      console.warn('[PERSIST] La persistencia no es compatible con esta plataforma');
+    }
+  });
+
 
 const qs = s => document.querySelector(s);
 const lista = qs('#lista');
