@@ -1,104 +1,14 @@
 <!doctype html>
-<html lang="es">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Reparto de Agua — PWA</title>
-  <link rel="manifest" href="manifest.webmanifest">
-  <meta name="theme-color" content="#0ea5e9" />
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <header class="topbar">
-    <h1>Reparto de Agua</h1>
-    <div class="actions">
-      <button id="btnRefresh" class="btn-ghost">🔁 Actualizar datos</button>
-      <small id="syncMsg" class="muted"></small>
-    </div>
-  </header>
-
-  <main class="container">
-    <section class="card">
-      <h2>Crear cliente</h2>
-      <form id="formCliente" class="grid" autocomplete="off">
-        <input name="nombre" placeholder="Nombre" required />
-        <input name="direccion" placeholder="Dirección" />
-        <input name="telefono" placeholder="Teléfono" />
-        <select name="diaEntrega" required>
-          <option value="" disabled selected>Día de entrega</option>
-          <option>lunes</option><option>martes</option><option>miercoles</option>
-          <option>jueves</option><option>viernes</option><option>sabado</option><option>domingo</option>
-        </select>
-        <select name="estado" required>
-          <option selected>activo</option><option>pausado</option>
-        </select>
-        <input name="stock20" type="number" min="0" placeholder="Stock 20 L" />
-        <input name="stock12" type="number" min="0" placeholder="Stock 12 L" />
-        <input name="stockSif" type="number" min="0" placeholder="Stock Sifones" />
-        <textarea name="notas" placeholder="Notas (opcional)" rows="2"></textarea>
-        <button id="btnGuardar">Guardar cliente</button>
-      </form>
-      <div id="msg" class="toast" style="display:none"></div>
-    </section>
-
-    <section class="card">
-      <h2>Clientes guardados <span class="muted">(total: <span id="total">0</span>)</span></h2>
-      <div class="grid">
-        <input id="search" placeholder="Buscar por nombre, dirección, teléfono o notas..." />
-        <select id="fDia">
-          <option value="todos" selected>Todos los días</option>
-          <option>lunes</option><option>martes</option><option>miercoles</option>
-          <option>jueves</option><option>viernes</option><option>sabado</option><option>domingo</option>
-        </select>
-        <select id="fEstado">
-          <option value="todos" selected>Todos</option>
-          <option>activo</option><option>pausado</option>
-        </select>
-      </div>
-      <div id="lista" class="list"></div>
-      <div id="empty" class="empty muted" style="display:none">No hay clientes para mostrar.</div>
-    </section>
-  </main>
-
-  <!-- Modal de edición -->
-  <div id="modal" class="modal hidden" aria-hidden="true">
-    <div class="overlay"></div>
-    <div class="modal-card">
-      <h3>Editar cliente</h3>
-      <form id="formEdit" class="grid">
-        <input name="nombre" placeholder="Nombre" required />
-        <input name="direccion" placeholder="Dirección" />
-        <input name="telefono" placeholder="Teléfono" />
-        <select name="diaEntrega" required>
-          <option>lunes</option><option>martes</option><option>miercoles</option>
-          <option>jueves</option><option>viernes</option><option>sabado</option><option>domingo</option>
-        </select>
-        <select name="estado" required>
-          <option>activo</option><option>pausado</option>
-        </select>
-        <input name="stock20" type="number" min="0" placeholder="Stock 20 L" />
-        <input name="stock12" type="number" min="0" placeholder="Stock 12 L" />
-        <input name="stockSif" type="number" min="0" placeholder="Stock Sifones" />
-        <textarea name="notas" placeholder="Notas" rows="2"></textarea>
-        <div class="modal-actions">
-          <button type="button" id="btnCancel" class="btn-ghost">Cancelar</button>
-          <button type="submit" id="btnSaveEdit">Guardar cambios</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <footer class="foot">
-    <small>Funciona offline y sincroniza con Firestore al reconectar.</small>
-  </footer>
-
-  <script type="module" src="app.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js?v=5');
-      });
-    }
-  </script>
-</body>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="/src/app.css" rel="stylesheet">
+    <title>repartoagua</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
 </html>

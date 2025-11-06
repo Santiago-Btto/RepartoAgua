@@ -1,0 +1,13 @@
+@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply text-white; 
+    /* Aquí también puedes poner el fondo oscuro 
+       que tenías en +page.svelte si quieres */
+    @apply bg-gray-900; 
+  }
+}
