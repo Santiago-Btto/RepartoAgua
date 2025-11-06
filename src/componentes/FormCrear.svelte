@@ -2,7 +2,7 @@
     import { createEventDispatcher } from 'svelte';
     const dispatch = createEventDispatcher();
     let data = {
-        nombre: '', direccion: '', telefono: '', diaEntrega: '', estado: 'activo',
+        nombre: '', direccion: '', telefono: undefined, diaEntrega: '', estado: 'activo',
         stock20: undefined, stock12: undefined, stockSif: undefined, stockDispenser: undefined, orden: undefined, notas: ''
     };
 
@@ -12,7 +12,7 @@
         }
         dispatch('crear', data);
         data = {
-            nombre: '', direccion: '', telefono: '', diaEntrega: '', estado: 'activo',
+            nombre: '', direccion: '', telefono: undefined, diaEntrega: '', estado: 'activo',
             stock20: undefined, stock12: undefined, stockSif: undefined, stockDispenser: undefined, orden: undefined, notas: ''
         };
     }
@@ -22,7 +22,7 @@
 <form class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3" on:submit|preventDefault={handleSubmit}>
     <input class={inputClass} placeholder="Nombre" required bind:value={data.nombre} />
     <input class={inputClass} placeholder="Dirección" bind:value={data.direccion} />
-    <input class={inputClass} placeholder="Teléfono" bind:value={data.telefono} />
+    <input class={inputClass} type="number" placeholder="Teléfono" bind:value={data.telefono} />
     <select class={inputClass} required bind:value={data.diaEntrega}>
         <option value="" disabled>Día de entrega</option>
         <option>lunes</option><option>martes</option><option>miercoles</option>
