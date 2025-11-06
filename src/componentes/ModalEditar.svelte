@@ -28,6 +28,8 @@
             <input class={inputClass} type="number" min="0" placeholder="Stock 20 L" bind:value={data.stock20} />
             <input class={inputClass} type="number" min="0" placeholder="Stock 12 L" bind:value={data.stock12} />
             <input class={inputClass} type="number" min="0" placeholder="Stock Sifones" bind:value={data.stockSif} />
+            <input class={inputClass} type="number" min="0" placeholder="Stock Dispenser" bind:value={data.stockDispenser} />
+            <input class={inputClass} type="number" min="0" placeholder="Orden" bind:value={data.orden} />
             <textarea class="{inputClass} md:col-span-2" placeholder="Notas" rows="2" bind:value={data.notas}></textarea>
             <div class="md:col-span-2 flex justify-end gap-3 mt-4">
                 <button type="button" class="px-4 py-2 rounded-md bg-gray-700 hover:bg-gray-600" on:click={() => dispatch('cerrar')}>

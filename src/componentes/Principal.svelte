@@ -102,7 +102,7 @@
 
     $: gruposRender = dias.map(dia => ({
         dia: dia,
-        clientes: clientesFiltrados.filter(c => c.diaEntrega === dia)
+        clientes: clientesFiltrados.filter(c => c.diaEntrega === dia).sort((a, b)=> a.orden - b.orden)
     })).filter(g => g.clientes.length > 0);
 
 </script>
