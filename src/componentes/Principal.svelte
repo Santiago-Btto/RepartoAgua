@@ -17,6 +17,7 @@
     let filtroDia = 'todos';
     let filtroEstado = 'todos';
     let clienteAEditar = null;
+    let clienteACrear = false;
 
     const dias = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"];
 
@@ -119,26 +120,15 @@
     </header>
 
     <div class="max-w-5xl mx-auto p-4 grid gap-4">
-        
-        <section class="bg-[#111828] border border-gray-700 rounded-lg p-4">
-            <h2 class="text-lg font-semibold mb-4">Crear cliente</h2>
-            <FormCrear on:crear={handleCrearCliente} />
-            
-            {#if toastMsg}
-            <div class="mt-3 p-3 text-sm bg-green-900 border border-green-700 text-green-200 rounded-md">
-                {toastMsg}
-            </div>
-            {/if}
-        </section>
-
-        <section class="bg-[#111828] border border-gray-700 rounded-lg p-4">
-            <Filtros
+        <Filtros
             bind:term={filtroTerm}
             bind:dia={filtroDia}
             bind:estado={filtroEstado}
             total={totalClientes}
-            />
-            
+            on:crear={() => clienteACrear = true}
+        />
+
+        <section class="bg-[#111828] border border-gray-700 rounded-lg p-4">
             <ListaClientes 
             grupos={gruposRender}
             on:editar={e => clienteAEditar = e.detail}
@@ -153,5 +143,9 @@
             on:guardar={handleGuardarEdicion}
             on:cerrar={() => clienteAEditar = null}
         />
+    {/if}
+
+    {#if clienteACrear}
+        <FormCrear on:crear={handleCrearCliente} on:cerrar={() => clienteACrear = false}/>
     {/if}
 </div>
