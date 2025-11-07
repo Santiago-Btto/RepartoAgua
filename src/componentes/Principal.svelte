@@ -94,7 +94,7 @@
         const term = filtroTerm.toLowerCase();
         const hay = (c.nombre || '').toLowerCase().includes(term)
             || (c.direccion || '').toLowerCase().includes(term)
-            || (c.telefono || '').toLowerCase().includes(term)
+            || (c.telefono.toString() || '').toLowerCase().includes(term)
             || (c.notas || '').toLowerCase().includes(term);
         if (!hay) return false;
         }
