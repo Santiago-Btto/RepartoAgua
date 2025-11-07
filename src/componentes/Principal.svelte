@@ -91,12 +91,12 @@
         if (filtroDia !== 'todos' && c.diaEntrega !== filtroDia) return false;
         if (filtroEstado !== 'todos' && c.estado !== filtroEstado) return false;
         if (filtroTerm) {
-        const term = filtroTerm.toLowerCase();
-        const hay = (c.nombre || '').toLowerCase().includes(term)
-            || (c.direccion || '').toLowerCase().includes(term)
-            || (c.telefono.toString() || '').toLowerCase().includes(term)
-            || (c.notas || '').toLowerCase().includes(term);
-        if (!hay) return false;
+            const term = filtroTerm.toLowerCase();
+            const hay = (c.nombre || '').toLowerCase().includes(term)
+                || (c.direccion || '').toLowerCase().includes(term)
+                || (c.telefono.toString() || '').toLowerCase().includes(term)
+                || (c.notas || '').toLowerCase().includes(term);
+            if (!hay) return false;
         }
         return true;
     });
