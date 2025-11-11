@@ -1,10 +1,11 @@
 <script>
     import { onMount } from 'svelte';
-    import { db } from '../firebase.js'; 
+    import { db } from '../firebase.js';
     import {
-        collection, addDoc, onSnapshot, doc, updateDoc,
-        deleteDoc, serverTimestamp, query, orderBy, getDocs, where
+        collection, onSnapshot, doc, updateDoc, deleteDoc,
+        serverTimestamp, query, orderBy, getDocs, where, writeBatch
     } from "firebase/firestore";
+
     import FormCrear from './FormCrear.svelte';
     import ListaClientes from './ListaClientes.svelte';
     import ModalEditar from './ModalEditar.svelte';
@@ -21,12 +22,10 @@
 
     const dias = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"];
 
-    function setSync(text) { syncMsg = text || ''; }
-    function toast(msg) {
-        toastMsg = msg;
-        setTimeout(() => toastMsg = '', 2200);
-    }
+    const setSync = (text) => { syncMsg = text || ''; };
+    const toast = (msg) => { toastMsg = msg; setTimeout(() => toastMsg = '', 2200); };
 
+    // no incluimos id para no enviar undefined a firestore
     function normalizarCliente(data) {
         return {
             nombre: (data.nombre || '').trim(),
@@ -43,6 +42,7 @@
         };
     }
 
+    // live sync 
     onMount(() => {
         const q = query(collection(db, 'clientes'), orderBy('nombre'));
         const unsubscribe = onSnapshot(q, (snap) => {
@@ -54,7 +54,7 @@
         window.addEventListener('online', () => setSync('Conectado • sincronizando...'));
         window.addEventListener('offline', () => setSync('Sin conexión (modo offline)'));
 
-        return unsubscribe; 
+        return unsubscribe;
     });
 
     async function handleRefresh() {
@@ -63,83 +63,187 @@
         setTimeout(() => setSync(''), 800);
     }
 
-    
+
     async function handleCrearCliente(e) {
         const data = normalizarCliente(e.detail);
-
         if (!data.nombre || !data.diaEntrega || !data.orden) {
             alert('Completá nombre, orden y día.');
             return;
         }
 
         try {
-            
-            const sameDaySnap = await getDocs(
-                query(collection(db, 'clientes'), where('diaEntrega', '==', data.diaEntrega))
-            );
-            
-            const existeMismoOrdenEnDia = sameDaySnap.docs.some(
-                d => Number(d.data().orden) === data.orden
-            );
-            if (existeMismoOrdenEnDia) {
-                alert(`⚠️ Ya existe orden ${data.orden} para ${data.diaEntrega}. Elegí otro número.`);
-                return; // no quiero que se cierre el cliente por si tiene algun error
-            }
+            const day = data.diaEntrega;
+            const k = Number(data.orden);
 
-            await addDoc(collection(db, 'clientes'), {
+            // traer todos los del mismo dia
+            const snap = await getDocs(
+                query(collection(db, 'clientes'), where('diaEntrega', '==', day))
+            );
+
+            
+            const batch = writeBatch(db);
+
+            // 1) hacer espacio: todos los x >= k  +1
+            snap.docs
+                .map(d => ({ ref: d.ref, ...d.data() }))
+                .filter(c => Number(c.orden) >= k)
+                .forEach(c => batch.update(c.ref, {
+                    orden: Number(c.orden) + 1,
+                    lastModified: serverTimestamp()
+                }));
+
+            // 2) nuevo en el hueco (payload sin id)
+            const newRef = doc(collection(db, 'clientes')); // sin import interno
+            batch.set(newRef, {
                 ...data,
                 creadoEn: serverTimestamp(),
                 lastModified: serverTimestamp()
             });
 
-            clienteACrear = false;     
-            toast('Cliente guardado ✔');
+            // 3) Commit atómico
+            await batch.commit();
+
+            clienteACrear = false;
+            toast(`Cliente guardado ✔ (insertado en orden ${k})`);
         } catch (err) {
-            console.error('[ADD] ERROR', err);
-            alert('❌ No se pudo guardar. Intentalo de nuevo.');
+            console.error('[ADD batch] ERROR', err);
+            alert(`❌ No se pudo guardar. ${err?.message ?? ''}`);
         }
     }
 
     
     async function handleGuardarEdicion(e) {
-        const edit = e.detail;
-        const payload = { ...normalizarCliente(edit), lastModified: serverTimestamp() };
-        const id = edit.id;
-        delete payload.id;
+        const incoming = e.detail;          // con id
+        const editId = incoming.id;
+        const edit   = normalizarCliente(incoming); // payload sin id
+        const original = clientesCache.find(c => c.id === editId);
+        if (!original) { alert('Cliente no encontrado.'); return; }
 
         try {
-            
-            const sameDaySnap = await getDocs(
-                query(collection(db, 'clientes'), where('diaEntrega', '==', payload.diaEntrega))
-            );
-            const duplicado = sameDaySnap.docs.some(
-                d => d.id !== id && Number(d.data().orden) === payload.orden
-            );
-            if (duplicado) {
-                alert(`⚠️ Ya existe orden ${payload.orden} para ${payload.diaEntrega}.`);
-                return; // no quiero que se cierre el cliente por si tiene algun error
+            const batch = writeBatch(db);
+            const refSelf = doc(db, 'clientes', editId);
+
+            const oldDay = original.diaEntrega;
+            const newDay = edit.diaEntrega;
+            const oldK   = Number(original.orden);
+            const newK   = Number(edit.orden);
+
+            if (newDay === oldDay) {
+                
+                if (newK !== oldK) {
+                    const snap = await getDocs(
+                        query(collection(db, 'clientes'), where('diaEntrega', '==', oldDay))
+                    );
+                    const items = snap.docs.map(d => ({ ref: d.ref, id: d.id, ...d.data() }));
+
+                    if (newK < oldK) {
+                        // 5 → 2  => [2..4] +1
+                        items
+                          .filter(c => c.id !== editId && Number(c.orden) >= newK && Number(c.orden) <= oldK - 1)
+                          .forEach(c => batch.update(c.ref, {
+                              orden: Number(c.orden) + 1,
+                              lastModified: serverTimestamp()
+                          }));
+                    } else {
+                        // 2 → 5  => [3..5] -1
+                        items
+                          .filter(c => c.id !== editId && Number(c.orden) > oldK && Number(c.orden) <= newK)
+                          .forEach(c => batch.update(c.ref, {
+                              orden: Number(c.orden) - 1,
+                              lastModified: serverTimestamp()
+                          }));
+                    }
+                }
+
+                // actualizar el propio cliente payload sin id
+                const payload = { ...edit, lastModified: serverTimestamp() };
+                batch.update(refSelf, payload);
+
+            } else {
+                // ----- CAMBIO DE DÍA -----
+
+                // 1) dia original: compactar "hueco" (x > oldK -1)
+                const snapOld = await getDocs(
+                    query(collection(db, 'clientes'), where('diaEntrega', '==', oldDay))
+                );
+                snapOld.docs
+                  .map(d => ({ ref: d.ref, id: d.id, ...d.data() }))
+                  .filter(c => c.id !== editId && Number(c.orden) > oldK)
+                  .forEach(c => batch.update(c.ref, {
+                      orden: Number(c.orden) - 1,
+                      lastModified: serverTimestamp()
+                  }));
+
+                // dia nuevo: hacer espacio (x >= newK +1)
+                const snapNew = await getDocs(
+                    query(collection(db, 'clientes'), where('diaEntrega', '==', newDay))
+                );
+                snapNew.docs
+                  .map(d => ({ ref: d.ref, ...d.data() }))
+                  .filter(c => Number(c.orden) >= newK)
+                  .forEach(c => batch.update(c.ref, {
+                      orden: Number(c.orden) + 1,
+                      lastModified: serverTimestamp()
+                  }));
+
+                // cliente con nuevo día/orden payload sin id
+                const payload = { ...edit, lastModified: serverTimestamp() };
+                batch.update(refSelf, payload);
             }
 
-            await updateDoc(doc(db, 'clientes', id), payload);
+            
+            await batch.commit();
+
             toast('Cliente actualizado ✔');
-            clienteAEditar = null; 
-        } catch (err) { 
-            console.error('[UPDATE] ERROR', err);
-            alert('No se pudo actualizar.'); 
+            clienteAEditar = null;
+
+        } catch (err) {
+            console.error('[UPDATE batch] ERROR', err);
+            alert(`No se pudo actualizar. ${err?.message ?? ''}`);
         }
     }
+
 
     async function handleEliminarCliente(e) {
         const { id, nombre } = e.detail;
+        const item = clientesCache.find(c => c.id === id);
+        if (!item) return;
+
         if (confirm(`¿Eliminar a ${nombre}?`)) {
             try {
-                await deleteDoc(doc(db, 'clientes', id));
+                const day = item.diaEntrega;
+                const k   = Number(item.orden);
+
+                // Traemos los del mismo día para compactar
+                const snap = await getDocs(
+                    query(collection(db, 'clientes'), where('diaEntrega', '==', day))
+                );
+
+                const batch = writeBatch(db);
+
+                
+                batch.delete(doc(db, 'clientes', id));
+
+                // x > k bajan -1
+                snap.docs
+                  .map(d => ({ ref: d.ref, id: d.id, ...d.data() }))
+                  .filter(c => c.id !== id && Number(c.orden) > k)
+                  .forEach(c => batch.update(c.ref, {
+                      orden: Number(c.orden) - 1,
+                      lastModified: serverTimestamp()
+                  }));
+
+                
+                await batch.commit();
+
                 toast('Cliente eliminado.');
-            } catch (err) { 
-                console.error('[DELETE] ERROR', err); 
+            } catch (err) {
+                console.error('[DELETE batch] ERROR', err);
+                alert('No se pudo eliminar.');
             }
         }
     }
+
 
     $: totalClientes = clientesCache.length;
 
@@ -148,20 +252,21 @@
         if (filtroEstado !== 'todos' && c.estado !== filtroEstado) return false;
         if (filtroTerm) {
             const term = filtroTerm.toLowerCase();
-            const hay = (c.nombre || '').toLowerCase().includes(term)
-                || (c.direccion || '').toLowerCase().includes(term)
-                || ((c.telefono ?? '') + '').toLowerCase().includes(term)
-                || (c.notas || '').toLowerCase().includes(term);
+            const hay =
+                (c.nombre || '').toLowerCase().includes(term) ||
+                (c.direccion || '').toLowerCase().includes(term) ||
+                ((c.telefono ?? '') + '').toLowerCase().includes(term) ||
+                (c.notas || '').toLowerCase().includes(term);
             if (!hay) return false;
         }
         return true;
     });
 
     $: gruposRender = dias.map(dia => ({
-        dia: dia,
+        dia,
         clientes: clientesFiltrados
             .filter(c => c.diaEntrega === dia)
-            .sort((a, b)=> (a.orden ?? 0) - (b.orden ?? 0))
+            .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
     })).filter(g => g.clientes.length > 0);
 </script>
 
@@ -169,9 +274,7 @@
     <header class="sticky top-0 z-10 flex items-center justify-between bg-[#0f172a] p-4 border-b border-gray-700">
         <h1 class="text-lg font-semibold">Reparto de Agua</h1>
         <div class="flex items-center gap-3">
-            <button class="text-sm text-gray-400 hover:text-white" on:click={handleRefresh}>
-                🔁 Actualizar
-            </button>
+            <button class="text-sm text-gray-400 hover:text-white" on:click={handleRefresh}>🔁 Actualizar</button>
             <small class="text-gray-500">{syncMsg}</small>
         </div>
     </header>
@@ -186,7 +289,7 @@
         />
 
         <section class="bg-[#111828] border border-gray-700 rounded-lg p-4">
-            <ListaClientes 
+            <ListaClientes
                 grupos={gruposRender}
                 on:editar={e => clienteAEditar = e.detail}
                 on:eliminar={handleEliminarCliente}
@@ -195,7 +298,7 @@
     </div>
 
     {#if clienteAEditar}
-        <ModalEditar 
+        <ModalEditar
             cliente={clienteAEditar}
             on:guardar={handleGuardarEdicion}
             on:cerrar={() => clienteAEditar = null}
@@ -203,7 +306,7 @@
     {/if}
 
     {#if clienteACrear}
-        <FormCrear 
+        <FormCrear
             on:crear={handleCrearCliente}
             on:cerrar={() => clienteACrear = false}
         />
