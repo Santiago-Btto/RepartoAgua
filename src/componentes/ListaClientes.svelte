@@ -10,7 +10,7 @@
         } catch { return ''; }
     }
 
-    // mostrar stock (solo items > 0)
+    // mostrar stock (items > 0 por cliente)
     function mostrarStock(c) {
         const s20  = Number(c?.stock20 ?? 0);
         const s12  = Number(c?.stock12 ?? 0);
@@ -25,6 +25,18 @@
 
         return partes.length > 0 ? `Stock: ${partes.join(' - ')}` : 'Stock: -';
     }
+
+    // totales por día (siempre muestra las 4 categorías)
+    function totalesDiaTexto(grupo) {
+        let t20 = 0, t12 = 0, tsif = 0, tdisp = 0;
+        for (const c of (grupo?.clientes ?? [])) {
+            t20   += Number(c?.stock20 ?? 0);
+            t12   += Number(c?.stock12 ?? 0);
+            tsif  += Number(c?.stockSif ?? 0);
+            tdisp += Number(c?.stockDispenser ?? 0);
+        }
+        return `Total día: 20L(${t20}) - 12L(${t12}) - Sif(${tsif}) - Disp(${tdisp})`;
+    }
 </script>
 
 <div>
@@ -32,11 +44,14 @@
         <div class="p-4 text-gray-500">No hay clientes para mostrar.</div>
     {:else}
         {#each grupos as grupo (grupo.dia)}
-            <!-- dia + contador -->
-            <h3 class="font-semibold text-blue-300 mt-4 mb-2 text-lg">
-                {grupo.dia.toUpperCase()}
-                <span class="ml-2 text-gray-400">({grupo.clientes.length})</span>
-            </h3>
+            <!-- Título de día + contador y totales del día -->
+            <div class="mt-4 mb-2">
+                <h3 class="font-semibold text-blue-300 text-lg">
+                    {grupo.dia.toUpperCase()}
+                    <span class="ml-2 text-gray-400">({grupo.clientes.length})</span>
+                </h3>
+                <p class="text-xs text-gray-400 mt-1">{totalesDiaTexto(grupo)}</p>
+            </div>
 
             {#each grupo.clientes as c (c.id)}
                 <div class="flex justify-between bg-[#0c1124] border border-gray-700 rounded-lg mb-2 p-3">
@@ -47,16 +62,12 @@
                                 {c.estado}
                             </span>
                         </div>
-
                         <p class="text-sm text-gray-300">
                             {c.direccion ?? ''} - {c.telefono ?? ''}
                         </p>
-
                         <p class="text-sm text-gray-400">{mostrarStock(c)}</p>
-
                         <p class="text-gray-500 text-xs">Mod: {fmt(c.lastModified)}</p>
                     </div>
-
                     <div class="flex flex-col">
                         <p class="text-sm text-end mb-7">Orden: {c.orden}</p>
                         <div class="flex gap-2">
