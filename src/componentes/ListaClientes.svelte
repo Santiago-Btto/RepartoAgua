@@ -10,19 +10,18 @@
         } catch { return ''; }
     }
 
-    // mostrar stock
+    // mostrar stock (solo items > 0)
     function mostrarStock(c) {
-        const s20 = c.stock20 ?? 0;
-        const s12 = c.stock12 ?? 0;
-        const sif = c.stockSif ?? 0;
-        const disp = c.stockDispenser ?? 0; 
+        const s20  = Number(c?.stock20 ?? 0);
+        const s12  = Number(c?.stock12 ?? 0);
+        const sif  = Number(c?.stockSif ?? 0);
+        const disp = Number(c?.stockDispenser ?? 0);
 
-        // mostrar valor de stocks > 0
         const partes = [];
-        if (s20) partes.push(`20L(${s20})`);
-        if (s12) partes.push(`12L(${s12})`);
-        if (sif) partes.push(`Sif(${sif})`);
-        if (disp) partes.push(`Disp(${disp})`);
+        if (s20 > 0)  partes.push(`20L(${s20})`);
+        if (s12 > 0)  partes.push(`12L(${s12})`);
+        if (sif > 0)  partes.push(`Sif(${sif})`);
+        if (disp > 0) partes.push(`Disp(${disp})`);
 
         return partes.length > 0 ? `Stock: ${partes.join(' - ')}` : 'Stock: -';
     }
@@ -33,9 +32,12 @@
         <div class="p-4 text-gray-500">No hay clientes para mostrar.</div>
     {:else}
         {#each grupos as grupo (grupo.dia)}
+            <!-- dia + contador -->
             <h3 class="font-semibold text-blue-300 mt-4 mb-2 text-lg">
                 {grupo.dia.toUpperCase()}
+                <span class="ml-2 text-gray-400">({grupo.clientes.length})</span>
             </h3>
+
             {#each grupo.clientes as c (c.id)}
                 <div class="flex justify-between bg-[#0c1124] border border-gray-700 rounded-lg mb-2 p-3">
                     <div class="flex flex-col gap-2">
@@ -45,12 +47,16 @@
                                 {c.estado}
                             </span>
                         </div>
+
                         <p class="text-sm text-gray-300">
                             {c.direccion ?? ''} - {c.telefono ?? ''}
                         </p>
+
                         <p class="text-sm text-gray-400">{mostrarStock(c)}</p>
+
                         <p class="text-gray-500 text-xs">Mod: {fmt(c.lastModified)}</p>
                     </div>
+
                     <div class="flex flex-col">
                         <p class="text-sm text-end mb-7">Orden: {c.orden}</p>
                         <div class="flex gap-2">
