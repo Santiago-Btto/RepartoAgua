@@ -10,6 +10,10 @@
     import ListaClientes from './ListaClientes.svelte';
     import ModalEditar from './ModalEditar.svelte';
     import Filtros from './Filtros.svelte';
+    import EmpezarDia from './EmpezarDia.svelte';
+
+    let mostrarEmpezar = false;
+    let clientesDelDia = [];
 
     let clientesCache = [];
     let syncMsg = '';
@@ -268,6 +272,26 @@
             .filter(c => c.diaEntrega === dia)
             .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
     })).filter(g => g.clientes.length > 0);
+
+    function abrirEmpezarDia() {
+    if (filtroDia === 'todos') {
+        alert('Elegí un día en los filtros para empezar la ruta.');
+        return;
+    }
+    // tomar los clientes del día aplicado por el filtro, ordenados por `orden`
+    clientesDelDia = clientesCache
+        .filter(c => c.diaEntrega === filtroDia)
+        .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
+
+    if (clientesDelDia.length === 0) {
+        alert(`No hay clientes para ${filtroDia}.`);
+        return;
+    }
+    mostrarEmpezar = true;
+}
+
+
+
 </script>
 
 <div>
@@ -287,6 +311,15 @@
             total={totalClientes}
             on:crear={() => clienteACrear = true}
         />
+
+        <div class="flex items-center justify-end max-w-5xl mx-auto px-4 -mt-2">
+    <button
+        class="px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
+        on:click={abrirEmpezarDia}
+        disabled={filtroDia === 'todos'}>
+        ▶ Empezar día {filtroDia !== 'todos' ? `(${filtroDia})` : ''}
+    </button>
+</div>
 
         <section class="bg-[#111828] border border-gray-700 rounded-lg p-4">
             <ListaClientes
@@ -318,3 +351,13 @@
         </div>
     {/if}
 </div>
+
+{#if mostrarEmpezar}
+    <EmpezarDia
+        clientes={clientesDelDia}
+        on:cerrar={() => (mostrarEmpezar = false)}
+        on:guardar={handleGuardarEdicion}
+    />
+{/if}
+
+
