@@ -2,8 +2,9 @@
     import { onMount } from 'svelte';
     import { db } from '../firebase.js';
     import {
-        collection, onSnapshot, doc, updateDoc, deleteDoc,
-        serverTimestamp, query, orderBy, getDocs, where, writeBatch
+        collection, onSnapshot, doc,
+        serverTimestamp, query, orderBy,
+        getDocs, where, writeBatch
     } from "firebase/firestore";
 
     import FormCrear from './FormCrear.svelte';
@@ -46,7 +47,7 @@
         };
     }
 
-    // live sync 
+    // -------- Live sync --------
     onMount(() => {
         const q = query(collection(db, 'clientes'), orderBy('nombre'));
         const unsubscribe = onSnapshot(q, (snap) => {
@@ -67,7 +68,7 @@
         setTimeout(() => setSync(''), 800);
     }
 
-
+    // CREAR
     async function handleCrearCliente(e) {
         const data = normalizarCliente(e.detail);
         if (!data.nombre || !data.diaEntrega || !data.orden) {
@@ -84,7 +85,6 @@
                 query(collection(db, 'clientes'), where('diaEntrega', '==', day))
             );
 
-            
             const batch = writeBatch(db);
 
             // 1) hacer espacio: todos los x >= k  +1
@@ -97,7 +97,7 @@
                 }));
 
             // 2) nuevo en el hueco (payload sin id)
-            const newRef = doc(collection(db, 'clientes')); // sin import interno
+            const newRef = doc(collection(db, 'clientes'));
             batch.set(newRef, {
                 ...data,
                 creadoEn: serverTimestamp(),
@@ -115,7 +115,7 @@
         }
     }
 
-    
+    // EDITAR
     async function handleGuardarEdicion(e) {
         const incoming = e.detail;          // con id
         const editId = incoming.id;
@@ -133,7 +133,6 @@
             const newK   = Number(edit.orden);
 
             if (newDay === oldDay) {
-                
                 if (newK !== oldK) {
                     const snap = await getDocs(
                         query(collection(db, 'clientes'), where('diaEntrega', '==', oldDay))
@@ -165,8 +164,6 @@
 
             } else {
                 // ----- CAMBIO DE DÍA -----
-
-                // 1) dia original: compactar "hueco" (x > oldK -1)
                 const snapOld = await getDocs(
                     query(collection(db, 'clientes'), where('diaEntrega', '==', oldDay))
                 );
@@ -178,7 +175,6 @@
                       lastModified: serverTimestamp()
                   }));
 
-                // dia nuevo: hacer espacio (x >= newK +1)
                 const snapNew = await getDocs(
                     query(collection(db, 'clientes'), where('diaEntrega', '==', newDay))
                 );
@@ -190,12 +186,10 @@
                       lastModified: serverTimestamp()
                   }));
 
-                // cliente con nuevo día/orden payload sin id
                 const payload = { ...edit, lastModified: serverTimestamp() };
                 batch.update(refSelf, payload);
             }
 
-            
             await batch.commit();
 
             toast('Cliente actualizado ✔');
@@ -207,51 +201,66 @@
         }
     }
 
-
+    // eliminar
     async function handleEliminarCliente(e) {
         const { id, nombre } = e.detail;
         const item = clientesCache.find(c => c.id === id);
         if (!item) return;
 
-        if (confirm(`¿Eliminar a ${nombre}?`)) {
-            try {
-                const day = item.diaEntrega;
-                const k   = Number(item.orden);
+        const confirmar = confirm(`¿Eliminar a ${nombre} del recorrido?`);
+        if (!confirmar) return;
 
-                // Traemos los del mismo día para compactar
-                const snap = await getDocs(
-                    query(collection(db, 'clientes'), where('diaEntrega', '==', day))
-                );
+        const motivoInput = prompt(`Motivo de eliminación para ${nombre}:`);
+        if (motivoInput === null) return; // canceló el prompt
+        const motivo = motivoInput.trim();
+        if (!motivo) {
+            alert('Debés ingresar un motivo para eliminar.');
+            return;
+        }
 
-                const batch = writeBatch(db);
+        try {
+            const day = item.diaEntrega;
+            const k   = Number(item.orden);
 
-                
-                batch.delete(doc(db, 'clientes', id));
+            const snap = await getDocs(
+                query(collection(db, 'clientes'), where('diaEntrega', '==', day))
+            );
 
-                // x > k bajan -1
-                snap.docs
-                  .map(d => ({ ref: d.ref, id: d.id, ...d.data() }))
-                  .filter(c => c.id !== id && Number(c.orden) > k)
-                  .forEach(c => batch.update(c.ref, {
-                      orden: Number(c.orden) - 1,
-                      lastModified: serverTimestamp()
-                  }));
+            const batch = writeBatch(db);
+            const refSelf = doc(db, 'clientes', id);
 
-                
-                await batch.commit();
+            // 1) marcar este cliente como eliminado (soft delete)
+            batch.update(refSelf, {
+                estado: 'eliminado',
+                motivoBaja: motivo,
+                fechaBaja: serverTimestamp(),
+                lastModified: serverTimestamp()
+            });
 
-                toast('Cliente eliminado.');
-            } catch (err) {
-                console.error('[DELETE batch] ERROR', err);
-                alert('No se pudo eliminar.');
-            }
+            // 2) reordenar los demás (x > k bajan -1)
+            snap.docs
+              .map(d => ({ ref: d.ref, id: d.id, ...d.data() }))
+              .filter(c => c.id !== id && Number(c.orden) > k)
+              .forEach(c => batch.update(c.ref, {
+                  orden: Number(c.orden) - 1,
+                  lastModified: serverTimestamp()
+              }));
+
+            await batch.commit();
+
+            toast('Cliente movido a eliminados.');
+        } catch (err) {
+            console.error('[DELETE soft] ERROR', err);
+            alert('No se pudo eliminar.');
         }
     }
 
+    // total solo cuenta los NO eliminados
+    $: totalClientes = clientesCache.filter(c => c.estado !== 'eliminado').length;
 
-    $: totalClientes = clientesCache.length;
-
+    // lista para la vista principal (excluye eliminados)
     $: clientesFiltrados = clientesCache.filter(c => {
+        if (c.estado === 'eliminado') return false;
         if (filtroDia !== 'todos' && c.diaEntrega !== filtroDia) return false;
         if (filtroEstado !== 'todos' && c.estado !== filtroEstado) return false;
         if (filtroTerm) {
@@ -273,25 +282,37 @@
             .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
     })).filter(g => g.clientes.length > 0);
 
+    // clientes eliminados 
+    function safeTime(ts) {
+        if (!ts) return '';
+        try { return ts.toDate ? ts.toDate().toLocaleString() : new Date(ts).toLocaleString(); }
+        catch { return ''; }
+    }
+
+    $: clientesEliminados = clientesCache
+        .filter(c => c.estado === 'eliminado')
+        .sort((a, b) => {
+            const ta = a.fechaBaja?.seconds ?? 0;
+            const tb = b.fechaBaja?.seconds ?? 0;
+            return tb - ta; // mas recientes primero
+        });
+
+    // empezar el dia
     function abrirEmpezarDia() {
-    if (filtroDia === 'todos') {
-        alert('Elegí un día en los filtros para empezar la ruta.');
-        return;
+        if (filtroDia === 'todos') {
+            alert('Elegí un día en los filtros para empezar la ruta.');
+            return;
+        }
+        clientesDelDia = clientesCache
+            .filter(c => c.diaEntrega === filtroDia && c.estado !== 'eliminado')
+            .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
+
+        if (clientesDelDia.length === 0) {
+            alert(`No hay clientes para ${filtroDia}.`);
+            return;
+        }
+        mostrarEmpezar = true;
     }
-    // tomar los clientes del día aplicado por el filtro, ordenados por `orden`
-    clientesDelDia = clientesCache
-        .filter(c => c.diaEntrega === filtroDia)
-        .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
-
-    if (clientesDelDia.length === 0) {
-        alert(`No hay clientes para ${filtroDia}.`);
-        return;
-    }
-    mostrarEmpezar = true;
-}
-
-
-
 </script>
 
 <div>
@@ -313,13 +334,13 @@
         />
 
         <div class="flex items-center justify-end max-w-5xl mx-auto px-4 -mt-2">
-    <button
-        class="px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
-        on:click={abrirEmpezarDia}
-        disabled={filtroDia === 'todos'}>
-        ▶ Empezar día {filtroDia !== 'todos' ? `(${filtroDia})` : ''}
-    </button>
-</div>
+            <button
+                class="px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
+                on:click={abrirEmpezarDia}
+                disabled={filtroDia === 'todos'}>
+                ▶ Empezar día {filtroDia !== 'todos' ? `(${filtroDia})` : ''}
+            </button>
+        </div>
 
         <section class="bg-[#111828] border border-gray-700 rounded-lg p-4">
             <ListaClientes
@@ -329,6 +350,40 @@
             />
         </section>
     </div>
+
+    {#if clientesEliminados.length}
+        <div class="max-w-5xl mx-auto px-4 pb-6">
+            <section class="bg-[#111828] border border-red-800/60 rounded-lg p-4 mt-4">
+                <h2 class="text-md font-semibold text-red-300 mb-2">
+                    Clientes eliminados ({clientesEliminados.length})
+                </h2>
+                <ul class="space-y-2">
+                    {#each clientesEliminados as c (c.id)}
+                        <li class="bg-[#0c1124] border border-gray-700 rounded-lg p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-semibold">{c.nombre}</span>
+                                    <span class="px-2 py-0.5 text-xs rounded-full bg-red-800 text-red-100">
+                                        eliminado
+                                    </span>
+                                </div>
+                                <p class="text-xs text-gray-400">
+                                    {#if c.diaEntrega}Día: {c.diaEntrega} • {/if}
+                                    Orden anterior: {c.orden ?? '-'}
+                                </p>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    Motivo: {c.motivoBaja ?? '—'}
+                                </p>
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                Fecha baja: {safeTime(c.fechaBaja)}
+                            </div>
+                        </li>
+                    {/each}
+                </ul>
+            </section>
+        </div>
+    {/if}
 
     {#if clienteAEditar}
         <ModalEditar
@@ -359,5 +414,3 @@
         on:guardar={handleGuardarEdicion}
     />
 {/if}
-
-
