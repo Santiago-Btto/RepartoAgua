@@ -424,7 +424,7 @@
                             bind:value={entrega.medioPago}
                         >
                             <option value="efectivo">efectivo</option>
-                            <option value="transferencia">transferencia</option>
+                            <option value="transferencia">fiado</option>
                             <option value="mercado_pago">mercado pago</option>
                             <option value="otro">otro</option>
                         </select>

@@ -11,9 +11,16 @@
     let entregas = [];
     let syncMsg = '';
 
-    // filtros de la vista
+    // filtros realmente aplicados
     let filtroDiaRuta = 'todos';   // lunes, martes... o todos
     let filtroPeriodo = 'hoy';     // hoy, 7dias, 30dias, todo
+
+    // valores que se editan en los <select>
+    let uiFiltroDiaRuta = 'todos';
+    let uiFiltroPeriodo = 'hoy';
+
+    // token para forzar recálculo de los $:
+    let recalcToken = 0;
 
     // ---- carga en vivo de entregas ----
     onMount(() => {
@@ -26,6 +33,8 @@
         const unsubscribe = onSnapshot(q, (snap) => {
             entregas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
             syncMsg = `Total entregas cargadas: ${entregas.length}`;
+            // cada vez que llegan datos nuevos, volvemos a filtrar
+            recalcToken++;
         });
 
         return unsubscribe;
@@ -54,7 +63,6 @@
         if (!d) return false;
 
         const ahora = new Date();
-        // normalizo a medianoche para comparación por fecha
         const hoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
         const fechaEntrega = new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
@@ -79,8 +87,25 @@
         return true;
     }
 
+    // aplicar filtros desde la UI
+    function aplicarFiltros() {
+        filtroPeriodo = uiFiltroPeriodo;
+        filtroDiaRuta = uiFiltroDiaRuta;
+        recalcToken++;    // fuerza recálculo
+    }
+
+    // resetear filtros a valores por defecto
+    function resetFiltros() {
+        uiFiltroPeriodo = 'hoy';
+        uiFiltroDiaRuta = 'todos';
+        filtroPeriodo = 'hoy';
+        filtroDiaRuta = 'todos';
+        recalcToken++;
+    }
+
     // ---- filtro principal sobre las entregas ----
-    $: entregasFiltradas = entregas.filter(e => {
+    // recalcToken en la tupla garantiza que SIEMPRE se vuelva a evaluar
+    $: entregasFiltradas = (recalcToken, entregas).filter(e => {
         if (filtroDiaRuta !== 'todos' && e.diaRuta !== filtroDiaRuta) return false;
         if (!estaEnPeriodo(e)) return false;
         return true;
@@ -97,7 +122,6 @@
     );
     $: totalPendiente = totalVentas - totalCobrado;
 
-    // Totales de unidades entregadas
     $: total20 = entregasFiltradas.reduce(
         (acc, e) => acc + (Number(e.entregado20) || 0),
         0
@@ -124,9 +148,9 @@
         </div>
 
         <!-- Filtros -->
-        <div class="flex flex-wrap gap-2 text-sm">
+        <div class="flex flex-wrap gap-2 text-sm items-center">
             <select
-                bind:value={filtroPeriodo}
+                bind:value={uiFiltroPeriodo}
                 class="bg-[#0c1222] border border-gray-700 rounded-md px-2 py-1 text-gray-200"
             >
                 <option value="hoy">Hoy</option>
@@ -136,7 +160,7 @@
             </select>
 
             <select
-                bind:value={filtroDiaRuta}
+                bind:value={uiFiltroDiaRuta}
                 class="bg-[#0c1222] border border-gray-700 rounded-md px-2 py-1 text-gray-200"
             >
                 <option value="todos">Todos los días</option>
@@ -148,6 +172,22 @@
                 <option value="sabado">sabado</option>
                 <option value="domingo">domingo</option>
             </select>
+
+            <button
+                type="button"
+                class="px-3 py-1 rounded-md bg-blue-600 hover:bg-blue-700 text-white"
+                on:click={aplicarFiltros}
+            >
+                Aplicar filtros
+            </button>
+
+            <button
+                type="button"
+                class="px-3 py-1 rounded-md bg-gray-700 hover:bg-gray-600 text-gray-100"
+                on:click={resetFiltros}
+            >
+                Reset
+            </button>
         </div>
     </header>
 
@@ -221,7 +261,7 @@
                                     ${e.montoCobrado || 0}
                                 </td>
                                 <td class="py-1 px-2 text-right align-top text-amber-300">
-                                    ${(Number(e.montoTotal) || 0) - (Number(e.montoCobrado) || 0)}
+                                    {(Number(e.montoTotal) || 0) - (Number(e.montoCobrado) || 0)}
                                 </td>
                             </tr>
                         {/each}
