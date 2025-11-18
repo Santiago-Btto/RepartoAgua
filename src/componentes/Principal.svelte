@@ -4,17 +4,31 @@
     import {
         collection, onSnapshot, doc,
         serverTimestamp, query, orderBy,
-        getDocs, where, writeBatch
+        getDocs, where, writeBatch, addDoc,
+        getDoc, setDoc
     } from "firebase/firestore";
 
+    import Estadisticas from './Estadisticas.svelte';
     import FormCrear from './FormCrear.svelte';
     import ListaClientes from './ListaClientes.svelte';
     import ModalEditar from './ModalEditar.svelte';
     import Filtros from './Filtros.svelte';
     import EmpezarDia from './EmpezarDia.svelte';
 
+    // vista actual
+    let vista = 'clientes';          // 'clientes' | 'estadisticas'
+
+    // modal empezar día
     let mostrarEmpezar = false;
     let clientesDelDia = [];
+
+    // precios base (config global)
+    let preciosBase = {
+        precio20: 0,
+        precio12: 0,
+        precioSif: 0,
+        precioDisp: 0
+    };
 
     let clientesCache = [];
     let syncMsg = '';
@@ -25,12 +39,14 @@
     let clienteAEditar = null;
     let clienteACrear = false;
 
+    // acordeón de eliminados
+    let mostrarEliminados = true;
+
     const dias = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"];
 
     const setSync = (text) => { syncMsg = text || ''; };
-    const toast = (msg) => { toastMsg = msg; setTimeout(() => toastMsg = '', 2200); };
+    const toast = (msg) => { toastMsg = msg; setTimeout(() => (toastMsg = ''), 2200); };
 
-    // no incluimos id para no enviar undefined a firestore
     function normalizarCliente(data) {
         return {
             nombre: (data.nombre || '').trim(),
@@ -43,8 +59,44 @@
             stockSif: Number(data.stockSif) || 0,
             stockDispenser: Number(data.stockDispenser) || 0,
             orden: Number(data.orden),
-            notas: (data.notas || '').trim(),
+            notas: (data.notas || '').trim()
         };
+    }
+
+    // ---- CONFIG DE PRECIOS ----
+    async function cargarPrecios() {
+        try {
+            const ref = doc(db, 'config', 'precios');
+            const snap = await getDoc(ref);
+            if (snap.exists()) {
+                const data = snap.data();
+                preciosBase = {
+                    precio20: Number(data.precio20) || 0,
+                    precio12: Number(data.precio12) || 0,
+                    precioSif: Number(data.precioSif) || 0,
+                    precioDisp: Number(data.precioDisp) || 0
+                };
+            }
+        } catch (err) {
+            console.error('[CONFIG precios] ERROR carga', err);
+        }
+    }
+
+    async function guardarPrecios() {
+        try {
+            const ref = doc(db, 'config', 'precios');
+            await setDoc(ref, {
+                precio20: Number(preciosBase.precio20) || 0,
+                precio12: Number(preciosBase.precio12) || 0,
+                precioSif: Number(preciosBase.precioSif) || 0,
+                precioDisp: Number(preciosBase.precioDisp) || 0,
+                actualizadoEn: serverTimestamp()
+            });
+            toast('Precios guardados ✔');
+        } catch (err) {
+            console.error('[CONFIG precios] ERROR guardado', err);
+            alert('No se pudieron guardar los precios.');
+        }
     }
 
     // -------- Live sync --------
@@ -59,6 +111,9 @@
         window.addEventListener('online', () => setSync('Conectado • sincronizando...'));
         window.addEventListener('offline', () => setSync('Sin conexión (modo offline)'));
 
+        // carga config de precios
+        cargarPrecios();
+
         return unsubscribe;
     });
 
@@ -68,7 +123,7 @@
         setTimeout(() => setSync(''), 800);
     }
 
-    // CREAR
+    // -------- CREAR --------
     async function handleCrearCliente(e) {
         const data = normalizarCliente(e.detail);
         if (!data.nombre || !data.diaEntrega || !data.orden) {
@@ -80,14 +135,13 @@
             const day = data.diaEntrega;
             const k = Number(data.orden);
 
-            // traer todos los del mismo dia
             const snap = await getDocs(
                 query(collection(db, 'clientes'), where('diaEntrega', '==', day))
             );
 
             const batch = writeBatch(db);
 
-            // 1) hacer espacio: todos los x >= k  +1
+            // correr ordenes
             snap.docs
                 .map(d => ({ ref: d.ref, ...d.data() }))
                 .filter(c => Number(c.orden) >= k)
@@ -96,7 +150,6 @@
                     lastModified: serverTimestamp()
                 }));
 
-            // 2) nuevo en el hueco (payload sin id)
             const newRef = doc(collection(db, 'clientes'));
             batch.set(newRef, {
                 ...data,
@@ -104,7 +157,6 @@
                 lastModified: serverTimestamp()
             });
 
-            // 3) Commit atómico
             await batch.commit();
 
             clienteACrear = false;
@@ -115,11 +167,11 @@
         }
     }
 
-    // EDITAR
+    // -------- EDITAR --------
     async function handleGuardarEdicion(e) {
-        const incoming = e.detail;          // con id
+        const incoming = e.detail;
         const editId = incoming.id;
-        const edit   = normalizarCliente(incoming); // payload sin id
+        const edit = normalizarCliente(incoming);
         const original = clientesCache.find(c => c.id === editId);
         if (!original) { alert('Cliente no encontrado.'); return; }
 
@@ -129,8 +181,8 @@
 
             const oldDay = original.diaEntrega;
             const newDay = edit.diaEntrega;
-            const oldK   = Number(original.orden);
-            const newK   = Number(edit.orden);
+            const oldK = Number(original.orden);
+            const newK = Number(edit.orden);
 
             if (newDay === oldDay) {
                 if (newK !== oldK) {
@@ -140,51 +192,46 @@
                     const items = snap.docs.map(d => ({ ref: d.ref, id: d.id, ...d.data() }));
 
                     if (newK < oldK) {
-                        // 5 → 2  => [2..4] +1
                         items
-                          .filter(c => c.id !== editId && Number(c.orden) >= newK && Number(c.orden) <= oldK - 1)
-                          .forEach(c => batch.update(c.ref, {
-                              orden: Number(c.orden) + 1,
-                              lastModified: serverTimestamp()
-                          }));
+                            .filter(c => c.id !== editId && Number(c.orden) >= newK && Number(c.orden) <= oldK - 1)
+                            .forEach(c => batch.update(c.ref, {
+                                orden: Number(c.orden) + 1,
+                                lastModified: serverTimestamp()
+                            }));
                     } else {
-                        // 2 → 5  => [3..5] -1
                         items
-                          .filter(c => c.id !== editId && Number(c.orden) > oldK && Number(c.orden) <= newK)
-                          .forEach(c => batch.update(c.ref, {
-                              orden: Number(c.orden) - 1,
-                              lastModified: serverTimestamp()
-                          }));
+                            .filter(c => c.id !== editId && Number(c.orden) > oldK && Number(c.orden) <= newK)
+                            .forEach(c => batch.update(c.ref, {
+                                orden: Number(c.orden) - 1,
+                                lastModified: serverTimestamp()
+                            }));
                     }
                 }
 
-                // actualizar el propio cliente payload sin id
                 const payload = { ...edit, lastModified: serverTimestamp() };
                 batch.update(refSelf, payload);
-
             } else {
-                // ----- CAMBIO DE DÍA -----
                 const snapOld = await getDocs(
                     query(collection(db, 'clientes'), where('diaEntrega', '==', oldDay))
                 );
                 snapOld.docs
-                  .map(d => ({ ref: d.ref, id: d.id, ...d.data() }))
-                  .filter(c => c.id !== editId && Number(c.orden) > oldK)
-                  .forEach(c => batch.update(c.ref, {
-                      orden: Number(c.orden) - 1,
-                      lastModified: serverTimestamp()
-                  }));
+                    .map(d => ({ ref: d.ref, id: d.id, ...d.data() }))
+                    .filter(c => c.id !== editId && Number(c.orden) > oldK)
+                    .forEach(c => batch.update(c.ref, {
+                        orden: Number(c.orden) - 1,
+                        lastModified: serverTimestamp()
+                    }));
 
                 const snapNew = await getDocs(
                     query(collection(db, 'clientes'), where('diaEntrega', '==', newDay))
                 );
                 snapNew.docs
-                  .map(d => ({ ref: d.ref, ...d.data() }))
-                  .filter(c => Number(c.orden) >= newK)
-                  .forEach(c => batch.update(c.ref, {
-                      orden: Number(c.orden) + 1,
-                      lastModified: serverTimestamp()
-                  }));
+                    .map(d => ({ ref: d.ref, ...d.data() }))
+                    .filter(c => Number(c.orden) >= newK)
+                    .forEach(c => batch.update(c.ref, {
+                        orden: Number(c.orden) + 1,
+                        lastModified: serverTimestamp()
+                    }));
 
                 const payload = { ...edit, lastModified: serverTimestamp() };
                 batch.update(refSelf, payload);
@@ -194,14 +241,28 @@
 
             toast('Cliente actualizado ✔');
             clienteAEditar = null;
-
         } catch (err) {
             console.error('[UPDATE batch] ERROR', err);
             alert(`No se pudo actualizar. ${err?.message ?? ''}`);
         }
     }
 
-    // eliminar
+    // -------- REGISTRAR ENTREGA --------
+    async function handleRegistrarEntrega(e) {
+        const data = e.detail;
+        try {
+            await addDoc(collection(db, 'entregas'), {
+                ...data,
+                fecha: serverTimestamp()
+            });
+            toast('Entrega registrada ✔');
+        } catch (err) {
+            console.error('[ENTREGA] ERROR', err);
+            alert('No se pudo registrar la entrega.');
+        }
+    }
+
+    // -------- ELIMINAR (soft delete) --------
     async function handleEliminarCliente(e) {
         const { id, nombre } = e.detail;
         const item = clientesCache.find(c => c.id === id);
@@ -211,7 +272,7 @@
         if (!confirmar) return;
 
         const motivoInput = prompt(`Motivo de eliminación para ${nombre}:`);
-        if (motivoInput === null) return; // canceló el prompt
+        if (motivoInput === null) return;
         const motivo = motivoInput.trim();
         if (!motivo) {
             alert('Debés ingresar un motivo para eliminar.');
@@ -220,7 +281,7 @@
 
         try {
             const day = item.diaEntrega;
-            const k   = Number(item.orden);
+            const k = Number(item.orden);
 
             const snap = await getDocs(
                 query(collection(db, 'clientes'), where('diaEntrega', '==', day))
@@ -229,7 +290,6 @@
             const batch = writeBatch(db);
             const refSelf = doc(db, 'clientes', id);
 
-            // 1) marcar este cliente como eliminado (soft delete)
             batch.update(refSelf, {
                 estado: 'eliminado',
                 motivoBaja: motivo,
@@ -237,14 +297,13 @@
                 lastModified: serverTimestamp()
             });
 
-            // 2) reordenar los demás (x > k bajan -1)
             snap.docs
-              .map(d => ({ ref: d.ref, id: d.id, ...d.data() }))
-              .filter(c => c.id !== id && Number(c.orden) > k)
-              .forEach(c => batch.update(c.ref, {
-                  orden: Number(c.orden) - 1,
-                  lastModified: serverTimestamp()
-              }));
+                .map(d => ({ ref: d.ref, id: d.id, ...d.data() }))
+                .filter(c => c.id !== id && Number(c.orden) > k)
+                .forEach(c => batch.update(c.ref, {
+                    orden: Number(c.orden) - 1,
+                    lastModified: serverTimestamp()
+                }));
 
             await batch.commit();
 
@@ -255,10 +314,9 @@
         }
     }
 
-    // total solo cuenta los NO eliminados
+    // -------- Derivados --------
     $: totalClientes = clientesCache.filter(c => c.estado !== 'eliminado').length;
 
-    // lista para la vista principal (excluye eliminados)
     $: clientesFiltrados = clientesCache.filter(c => {
         if (c.estado === 'eliminado') return false;
         if (filtroDia !== 'todos' && c.diaEntrega !== filtroDia) return false;
@@ -282,7 +340,6 @@
             .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0))
     })).filter(g => g.clientes.length > 0);
 
-    // clientes eliminados 
     function safeTime(ts) {
         if (!ts) return '';
         try { return ts.toDate ? ts.toDate().toLocaleString() : new Date(ts).toLocaleString(); }
@@ -294,10 +351,10 @@
         .sort((a, b) => {
             const ta = a.fechaBaja?.seconds ?? 0;
             const tb = b.fechaBaja?.seconds ?? 0;
-            return tb - ta; // mas recientes primero
+            return tb - ta;
         });
 
-    // empezar el dia
+    // -------- Empezar dia --------
     function abrirEmpezarDia() {
         if (filtroDia === 'todos') {
             alert('Elegí un día en los filtros para empezar la ruta.');
@@ -316,87 +373,190 @@
 </script>
 
 <div>
+    <!-- HEADER -->
     <header class="sticky top-0 z-10 flex items-center justify-between bg-[#0f172a] p-4 border-b border-gray-700">
         <h1 class="text-lg font-semibold">Reparto de Agua</h1>
+
         <div class="flex items-center gap-3">
-            <button class="text-sm text-gray-400 hover:text-white" on:click={handleRefresh}>🔁 Actualizar</button>
+            <div class="flex items-center gap-1 text-xs md:text-sm">
+                <button
+                    class="px-2 py-1 rounded-md border
+                           {vista === 'clientes'
+                               ? 'bg-blue-600 border-blue-500 text-white'
+                               : 'bg-transparent border-gray-600 text-gray-300 hover:bg-gray-800'}"
+                    on:click={() => vista = 'clientes'}
+                >
+                    📋 Clientes
+                </button>
+                <button
+                    class="px-2 py-1 rounded-md border
+                           {vista === 'estadisticas'
+                               ? 'bg-blue-600 border-blue-500 text-white'
+                               : 'bg-transparent border-gray-600 text-gray-300 hover:bg-gray-800'}"
+                    on:click={() => vista = 'estadisticas'}
+                >
+                    📊 Estadísticas
+                </button>
+            </div>
+
+            <button class="text-sm text-gray-400 hover:text-white" on:click={handleRefresh}>
+                🔁 Actualizar
+            </button>
             <small class="text-gray-500">{syncMsg}</small>
         </div>
     </header>
 
-    <div class="max-w-5xl mx-auto p-4 grid gap-4">
-        <Filtros
-            bind:term={filtroTerm}
-            bind:dia={filtroDia}
-            bind:estado={filtroEstado}
-            total={totalClientes}
-            on:crear={() => clienteACrear = true}
-        />
-
-        <div class="flex items-center justify-end max-w-5xl mx-auto px-4 -mt-2">
-            <button
-                class="px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
-                on:click={abrirEmpezarDia}
-                disabled={filtroDia === 'todos'}>
-                ▶ Empezar día {filtroDia !== 'todos' ? `(${filtroDia})` : ''}
-            </button>
-        </div>
-
-        <section class="bg-[#111828] border border-gray-700 rounded-lg p-4">
-            <ListaClientes
-                grupos={gruposRender}
-                on:editar={e => clienteAEditar = e.detail}
-                on:eliminar={handleEliminarCliente}
+    {#if vista === 'clientes'}
+        <!-- VISTA CLIENTES -->
+        <div class="max-w-5xl mx-auto p-4 grid gap-4">
+            <Filtros
+                bind:term={filtroTerm}
+                bind:dia={filtroDia}
+                bind:estado={filtroEstado}
+                total={totalClientes}
+                on:crear={() => (clienteACrear = true)}
             />
-        </section>
-    </div>
 
-    {#if clientesEliminados.length}
-        <div class="max-w-5xl mx-auto px-4 pb-6">
-            <section class="bg-[#111828] border border-red-800/60 rounded-lg p-4 mt-4">
-                <h2 class="text-md font-semibold text-red-300 mb-2">
-                    Clientes eliminados ({clientesEliminados.length})
-                </h2>
-                <ul class="space-y-2">
-                    {#each clientesEliminados as c (c.id)}
-                        <li class="bg-[#0c1124] border border-gray-700 rounded-lg p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                            <div>
-                                <div class="flex items-center gap-2">
-                                    <span class="font-semibold">{c.nombre}</span>
-                                    <span class="px-2 py-0.5 text-xs rounded-full bg-red-800 text-red-100">
-                                        eliminado
-                                    </span>
-                                </div>
-                                <p class="text-xs text-gray-400">
-                                    {#if c.diaEntrega}Día: {c.diaEntrega} • {/if}
-                                    Orden anterior: {c.orden ?? '-'}
-                                </p>
-                                <p class="text-xs text-gray-500 mt-1">
-                                    Motivo: {c.motivoBaja ?? '—'}
-                                </p>
-                            </div>
-                            <div class="text-xs text-gray-500">
-                                Fecha baja: {safeTime(c.fechaBaja)}
-                            </div>
-                        </li>
-                    {/each}
-                </ul>
+            <!-- PRECIOS BASE -->
+            <section class="bg-[#111828] border border-gray-700 rounded-lg p-3 text-sm">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="font-semibold text-gray-200">Precios actuales</span>
+                    <button
+                        type="button"
+                        class="px-3 py-1 rounded-md text-xs bg-gray-700 hover:bg-gray-600"
+                        on:click={guardarPrecios}
+                    >
+                        💾 Guardar precios
+                    </button>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs text-gray-400">20L</label>
+                        <input
+                            type="number"
+                            class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-xs text-gray-100"
+                            bind:value={preciosBase.precio20}
+                            min="0"
+                        />
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs text-gray-400">12L</label>
+                        <input
+                            type="number"
+                            class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-xs text-gray-100"
+                            bind:value={preciosBase.precio12}
+                            min="0"
+                        />
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs text-gray-400">Sifón</label>
+                        <input
+                            type="number"
+                            class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-xs text-gray-100"
+                            bind:value={preciosBase.precioSif}
+                            min="0"
+                        />
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs text-gray-400">Dispenser</label>
+                        <input
+                            type="number"
+                            class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-xs text-gray-100"
+                            bind:value={preciosBase.precioDisp}
+                            min="0"
+                        />
+                    </div>
+                </div>
+            </section>
+
+            <div class="flex items-center justify-end max-w-5xl mx-auto px-4 -mt-2">
+                <button
+                    class="px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
+                    on:click={abrirEmpezarDia}
+                    disabled={filtroDia === 'todos'}>
+                    ▶ Empezar día {filtroDia !== 'todos' ? `(${filtroDia})` : ''}
+                </button>
+            </div>
+
+            <section class="bg-[#111828] border border-gray-700 rounded-lg p-4">
+                <ListaClientes
+                    grupos={gruposRender}
+                    on:editar={e => (clienteAEditar = e.detail)}
+                    on:eliminar={handleEliminarCliente}
+                />
             </section>
         </div>
+
+        {#if clientesEliminados.length}
+            <div class="max-w-5xl mx-auto px-4 pb-6">
+                <section class="bg-[#111828] border border-red-800/60 rounded-lg mt-4 overflow-hidden">
+                    <!-- "Acordeon" -->
+                    <button
+                        type="button"
+                        class="w-full flex items-center justify-between px-4 py-3 text-sm"
+                        on:click={() => (mostrarEliminados = !mostrarEliminados)}
+                    >
+                        <div class="flex items-center gap-2">
+                            <h2 class="font-semibold text-red-300">
+                                Clientes eliminados
+                            </h2>
+                            <span class="text-xs px-2 py-0.5 rounded-full bg-red-900 text-red-100">
+                                {clientesEliminados.length}
+                            </span>
+                        </div>
+                        <span class="text-gray-400 text-lg">
+                            {mostrarEliminados ? '▾' : '▸'}
+                        </span>
+                    </button>
+
+                    {#if mostrarEliminados}
+                        <div class="border-t border-red-800/60 p-4 max-h-80 overflow-y-auto">
+                            <ul class="space-y-2">
+                                {#each clientesEliminados as c (c.id)}
+                                    <li class="bg-[#0c1124] border border-gray-700 rounded-lg p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                                        <div>
+                                            <div class="flex items-center gap-2">
+                                                <span class="font-semibold">{c.nombre}</span>
+                                                <span class="px-2 py-0.5 text-xs rounded-full bg-red-800 text-red-100">
+                                                    eliminado
+                                                </span>
+                                            </div>
+                                            <p class="text-xs text-gray-400">
+                                                {#if c.diaEntrega}Día: {c.diaEntrega} • {/if}
+                                                Orden anterior: {c.orden ?? '-'}
+                                            </p>
+                                            <p class="text-xs text-gray-500 mt-1">
+                                                Motivo: {c.motivoBaja ?? '—'}
+                                            </p>
+                                        </div>
+                                        <div class="text-xs text-gray-500">
+                                            Fecha baja: {safeTime(c.fechaBaja)}
+                                        </div>
+                                    </li>
+                                {/each}
+                            </ul>
+                        </div>
+                    {/if}
+                </section>
+            </div>
+        {/if}
+    {:else}
+        <!-- ESTADISTICAS -->
+        <Estadisticas />
     {/if}
 
     {#if clienteAEditar}
         <ModalEditar
             cliente={clienteAEditar}
             on:guardar={handleGuardarEdicion}
-            on:cerrar={() => clienteAEditar = null}
+            on:cerrar={() => (clienteAEditar = null)}
         />
     {/if}
 
     {#if clienteACrear}
         <FormCrear
             on:crear={handleCrearCliente}
-            on:cerrar={() => clienteACrear = false}
+            on:cerrar={() => (clienteACrear = false)}
         />
     {/if}
 
@@ -410,7 +570,9 @@
 {#if mostrarEmpezar}
     <EmpezarDia
         clientes={clientesDelDia}
+        preciosBase={preciosBase}
         on:cerrar={() => (mostrarEmpezar = false)}
         on:guardar={handleGuardarEdicion}
+        on:registrarEntrega={handleRegistrarEntrega}
     />
 {/if}
