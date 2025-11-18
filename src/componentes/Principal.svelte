@@ -458,7 +458,7 @@
                         />
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="text-xs text-gray-400">Dispenser</label>
+                        <label class="text-xs text-gray-400">Jugos o Amargos</label>
                         <input
                             type="number"
                             class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-xs text-gray-100"

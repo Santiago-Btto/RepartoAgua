@@ -4,7 +4,8 @@
 
     // Recibe los clientes del día, YA ordenados por `orden`
     export let clientes = [];
-    // Precios base (vienen del Principal)
+
+    // precios globales que vienen de Principal.svelte
     export let preciosBase = {
         precio20: 0,
         precio12: 0,
@@ -21,10 +22,6 @@
         cant12: '',
         cantSif: '',
         cantDisp: '',
-        precio20: '',
-        precio12: '',
-        precioSif: '',
-        precioDisp: '',
         cobrado: '',
         medioPago: 'efectivo',
         notasEntrega: ''
@@ -32,18 +29,20 @@
 
     let recaudadoRecorrido = 0; // acumulado de lo cobrado en este recorrido (solo UI)
 
+    // para no re-inicializar entrega en cada tecla
+    let ultimoIdCliente = null;
+
+    // acordeón de edición de cliente
+    let mostrarEditarCliente = false;
+
     // Derivados reactivos
     $: total = clientes?.length ?? 0;
     $: clienteActual = clientes?.[index] ?? null;
     $: esUltimo = index >= total - 1;
 
-    // --- evitar que se resetee entrega en cada tecla ---
-    let ultimoIdCliente = null;
-
-    // Cuando CAMBIA de cliente, copiamos datos e inicializamos entrega UNA vez
+    // cuando CAMBIA de cliente, copiamos datos e inicializamos entrega UNA vez
     $: if (clienteActual && clienteActual.id !== ultimoIdCliente) {
         ultimoIdCliente = clienteActual.id;
-
         editable = { ...clienteActual };
 
         entrega = {
@@ -51,33 +50,36 @@
             cant12: '',
             cantSif: '',
             cantDisp: '',
-            // arrancan con precios base
-            precio20: String(preciosBase?.precio20 ?? ''),
-            precio12: String(preciosBase?.precio12 ?? ''),
-            precioSif: String(preciosBase?.precioSif ?? ''),
-            precioDisp: String(preciosBase?.precioDisp ?? ''),
             cobrado: '',
             medioPago: 'efectivo',
             notasEntrega: ''
         };
+
+        // al cambiar de cliente cerramos el acordeon
+        mostrarEditarCliente = false;
     }
 
-    // ---- Cálculos numéricos de la entrega actual ----
-    $: q20   = Number(entrega.cant20)   || 0;
-    $: q12   = Number(entrega.cant12)   || 0;
-    $: qSif  = Number(entrega.cantSif)  || 0;
-    $: qDisp = Number(entrega.cantDisp) || 0;
+    // Cálculo del total de la entrega actual (usando preciosBase)
+    let totalEntrega = 0;
+    let cobradoNum = 0;
+    let pendiente = 0;
 
-    $: p20   = Number(entrega.precio20)   || 0;
-    $: p12   = Number(entrega.precio12)   || 0;
-    $: pSif  = Number(entrega.precioSif)  || 0;
-    $: pDisp = Number(entrega.precioDisp) || 0;
+    $: {
+        const q20   = Number(entrega.cant20)  || 0;
+        const q12   = Number(entrega.cant12)  || 0;
+        const qSif  = Number(entrega.cantSif) || 0;
+        const qDisp = Number(entrega.cantDisp)|| 0;
 
-    $: totalEntrega = q20 * p20 + q12 * p12 + qSif * pSif + qDisp * pDisp;
-    $: cobradoNum   = Number(entrega.cobrado) || 0;
-    $: pendiente    = totalEntrega - cobradoNum;
+        const p20   = Number(preciosBase.precio20)  || 0;
+        const p12   = Number(preciosBase.precio12)  || 0;
+        const pSif  = Number(preciosBase.precioSif) || 0;
+        const pDisp = Number(preciosBase.precioDisp)|| 0;
 
-    // -------- utilidades --------
+        totalEntrega = q20*p20 + q12*p12 + qSif*pSif + qDisp*pDisp;
+        cobradoNum   = Number(entrega.cobrado) || 0;
+        pendiente    = totalEntrega - cobradoNum;
+    }
+
     function fmt(ts) {
         if (!ts) return '';
         try { return ts.toDate ? ts.toDate().toLocaleString() : new Date(ts).toLocaleString(); }
@@ -94,7 +96,7 @@
         if (s20 > 0)  partes.push(`20L(${s20})`);
         if (s12 > 0)  partes.push(`12L(${s12})`);
         if (sif > 0)  partes.push(`Sif(${sif})`);
-        if (disp > 0) partes.push(`Disp(${disp})`);
+        if (disp > 0) partes.push(`Jugos/Amargos(${disp})`);
 
         return partes.length > 0 ? `Stock: ${partes.join(' - ')}` : 'Stock: -';
     }
@@ -127,8 +129,18 @@
     function registrarEntrega(avanzarLuego = false) {
         if (!clienteActual) return;
 
-        const total = totalEntrega;
-        const cobrado = cobradoNum;
+        const q20   = Number(entrega.cant20)  || 0;
+        const q12   = Number(entrega.cant12)  || 0;
+        const qSif  = Number(entrega.cantSif) || 0;
+        const qDisp = Number(entrega.cantDisp)|| 0;
+
+        const p20   = Number(preciosBase.precio20)  || 0;
+        const p12   = Number(preciosBase.precio12)  || 0;
+        const pSif  = Number(preciosBase.precioSif) || 0;
+        const pDisp = Number(preciosBase.precioDisp)|| 0;
+
+        const total = q20*p20 + q12*p12 + qSif*pSif + qDisp*pDisp;
+        const cobrado = Number(entrega.cobrado) || 0;
 
         const estadoPago =
             cobrado >= total ? 'pagado' :
@@ -156,10 +168,9 @@
 
         dispatch('registrarEntrega', payload);
 
-        // Actualizo recaudado local
         recaudadoRecorrido += cobrado;
 
-        // Reseteo cantidades y cobro (dejo precios como están)
+        // Reseteo cantidades y cobro (dejo medio de pago)
         entrega = {
             ...entrega,
             cant20: '',
@@ -240,77 +251,88 @@
                     Últ. mod: {fmt(clienteActual.lastModified)}
                 </div>
 
-                <!-- FORM EDITABLE (stock / notas del cliente) -->
-                <div class="mt-3 border-t border-gray-700 pt-3 grid grid-cols-2 gap-3">
-                    <div class="col-span-2 text-gray-300 text-sm font-semibold">
-                        Editar datos del cliente (stock / notas)
-                    </div>
+                <!-- EDITAR DATOS DEL CLIENTE (ACORDEON) -->
+                <div class="mt-3 border-t border-gray-700 pt-2">
+                    <button
+                        type="button"
+                        class="w-full flex items-center justify-between text-sm text-gray-200 py-1"
+                        on:click={() => (mostrarEditarCliente = !mostrarEditarCliente)}
+                    >
+                        <span>Editar datos del cliente (stock / notas)</span>
+                        <span class="text-gray-400 text-lg">
+                            {mostrarEditarCliente ? '▾' : '▸'}
+                        </span>
+                    </button>
 
-                    <div class="flex flex-col gap-1">
-                        <label class="text-xs text-gray-400">Stock 20L</label>
-                        <input
-                            type="number"
-                            class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-sm text-gray-100"
-                            bind:value={editable.stock20}
-                            min="0"
-                        />
-                    </div>
+                    {#if mostrarEditarCliente}
+                        <div class="mt-2 grid grid-cols-2 gap-3">
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-gray-400">Stock 20L</label>
+                                <input
+                                    type="number"
+                                    class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-sm text-gray-100"
+                                    bind:value={editable.stock20}
+                                    min="0"
+                                />
+                            </div>
 
-                    <div class="flex flex-col gap-1">
-                        <label class="text-xs text-gray-400">Stock 12L</label>
-                        <input
-                            type="number"
-                            class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-sm text-gray-100"
-                            bind:value={editable.stock12}
-                            min="0"
-                        />
-                    </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-gray-400">Stock 12L</label>
+                                <input
+                                    type="number"
+                                    class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-sm text-gray-100"
+                                    bind:value={editable.stock12}
+                                    min="0"
+                                />
+                            </div>
 
-                    <div class="flex flex-col gap-1">
-                        <label class="text-xs text-gray-400">Sifones</label>
-                        <input
-                            type="number"
-                            class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-sm text-gray-100"
-                            bind:value={editable.stockSif}
-                            min="0"
-                        />
-                    </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-gray-400">Sifones</label>
+                                <input
+                                    type="number"
+                                    class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-sm text-gray-100"
+                                    bind:value={editable.stockSif}
+                                    min="0"
+                                />
+                            </div>
 
-                    <div class="flex flex-col gap-1">
-                        <label class="text-xs text-gray-400">Dispensers</label>
-                        <input
-                            type="number"
-                            class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-sm text-gray-100"
-                            bind:value={editable.stockDispenser}
-                            min="0"
-                        />
-                    </div>
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-gray-400">Jugos / Amargos</label>
+                                <input
+                                    type="number"
+                                    class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-sm text-gray-100"
+                                    bind:value={editable.stockDispenser}
+                                    min="0"
+                                />
+                            </div>
 
-                    <div class="col-span-2 flex flex-col gap-1">
-                        <label class="text-xs text-gray-400">Notas del cliente</label>
-                        <textarea
-                            rows="2"
-                            class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-sm text-gray-100"
-                            bind:value={editable.notas}
-                        ></textarea>
-                    </div>
+                            <div class="col-span-2 flex flex-col gap-1">
+                                <label class="text-xs text-gray-400">Notas del cliente</label>
+                                <textarea
+                                    rows="2"
+                                    class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-sm text-gray-100"
+                                    bind:value={editable.notas}
+                                ></textarea>
+                            </div>
 
-                    <div class="col-span-2 flex justify-end gap-2 mt-2">
-                        <button
-                            type="button"
-                            class="px-3 py-1.5 rounded-md text-sm bg-gray-700 hover:bg-gray-600"
-                            on:click={() => guardar(false)}
-                        >
-                            💾 Guardar cambios cliente
-                        </button>
-                        <button
-                            type="button"
-                            class="px-3 py-1.5 rounded-md text-sm bg-blue-600 hover:bg-blue-700"
-                            on:click={() => guardar(true)}
-                        >
-                            {esUltimo ? 'Guardar y finalizar ✅' : 'Guardar y siguiente ▶'}
-                        </button>
-                    </div>
+                            <div class="col-span-2 flex justify-end gap-2 mt-2">
+                                <button
+                                    type="button"
+                                    class="px-3 py-1.5 rounded-md text-sm bg-gray-700 hover:bg-gray-600"
+                                    on:click={() => guardar(false)}
+                                >
+                                    💾 Guardar cambios cliente
+                                </button>
+                                <button
+                                    type="button"
+                                    class="px-3 py-1.5 rounded-md text-sm bg-blue-600 hover:bg-blue-700"
+                                    on:click={() => guardar(true)}
+                                >
+                                    {esUltimo ? 'Guardar y finalizar ✅' : 'Guardar y siguiente ▶'}
+                                </button>
+                            </div>
+                        </div>
+                    {/if}
                 </div>
 
                 <!-- ENTREGA DEL DIA -->
@@ -324,7 +346,22 @@
                         </span>
                     </div>
 
-                    <!-- Cantidades -->
+                    <div class="col-span-2 text-xs text-gray-500">
+                        Precios vigentes: 20L ${preciosBase.precio20} • 12L ${preciosBase.precio12}
+                        • Sifón ${preciosBase.precioSif} • Jugos/Amargos ${preciosBase.precioDisp}
+                    </div>
+
+                    <!-- Cantidades en el orden pedido -->
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs text-gray-400">Cant. Sifones</label>
+                        <input
+                            type="number"
+                            class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-sm text-gray-100"
+                            bind:value={entrega.cantSif}
+                            min="0"
+                        />
+                    </div>
+
                     <div class="flex flex-col gap-1">
                         <label class="text-xs text-gray-400">Cant. 20L</label>
                         <input
@@ -346,17 +383,7 @@
                     </div>
 
                     <div class="flex flex-col gap-1">
-                        <label class="text-xs text-gray-400">Cant. Sifones</label>
-                        <input
-                            type="number"
-                            class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-sm text-gray-100"
-                            bind:value={entrega.cantSif}
-                            min="0"
-                        />
-                    </div>
-
-                    <div class="flex flex-col gap-1">
-                        <label class="text-xs text-gray-400">Cant. Dispensers</label>
+                        <label class="text-xs text-gray-400">Cant. Jugos / Amargos</label>
                         <input
                             type="number"
                             class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-sm text-gray-100"
@@ -365,48 +392,6 @@
                         />
                     </div>
 
-                    <!-- Precios -->
-                    <div class="flex flex-col gap-1">
-                        <label class="text-xs text-gray-400">Precio 20L</label>
-                        <input
-                            type="number"
-                            class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-sm text-gray-100"
-                            bind:value={entrega.precio20}
-                            min="0"
-                        />
-                    </div>
-
-                    <div class="flex flex-col gap-1">
-                        <label class="text-xs text-gray-400">Precio 12L</label>
-                        <input
-                            type="number"
-                            class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-sm text-gray-100"
-                            bind:value={entrega.precio12}
-                            min="0"
-                        />
-                    </div>
-
-                    <div class="flex flex-col gap-1">
-                        <label class="text-xs text-gray-400">Precio Sifón</label>
-                        <input
-                            type="number"
-                            class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-sm text-gray-100"
-                            bind:value={entrega.precioSif}
-                            min="0"
-                        />
-                    </div>
-
-                    <div class="flex flex-col gap-1">
-                        <label class="text-xs text-gray-400">Precio Dispenser</label>
-                        <input
-                            type="number"
-                            class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-sm text-gray-100"
-                            bind:value={entrega.precioDisp}
-                            min="0"
-                        />
-                    </div>
-
-                    <!-- Cobro -->
                     <div class="flex flex-col gap-1">
                         <label class="text-xs text-gray-400">Monto cobrado</label>
                         <input
@@ -424,7 +409,7 @@
                             bind:value={entrega.medioPago}
                         >
                             <option value="efectivo">efectivo</option>
-                            <option value="transferencia">fiado</option>
+                            <option value="transferencia">transferencia</option>
                             <option value="mercado_pago">mercado pago</option>
                             <option value="otro">otro</option>
                         </select>

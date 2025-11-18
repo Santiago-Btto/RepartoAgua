@@ -214,9 +214,10 @@
             20L: <span class="font-semibold">{total20}</span> &nbsp;•&nbsp;
             12L: <span class="font-semibold">{total12}</span> &nbsp;•&nbsp;
             Sifones: <span class="font-semibold">{totalSif}</span> &nbsp;•&nbsp;
-            Dispensers: <span class="font-semibold">{totalDisp}</span>
+            Jugos o Amargos: <span class="font-semibold">{totalDisp}</span>
         </p>
     </section>
+
 
     <!-- Tabla de entregas -->
     <section class="bg-[#111828] border border-gray-700 rounded-lg p-3">
@@ -252,7 +253,7 @@
                                     20L: {e.entregado20 || 0}<br />
                                     12L: {e.entregado12 || 0}<br />
                                     Sif: {e.entregadoSif || 0}<br />
-                                    Disp: {e.entregadoDisp || 0}
+                                    Jugos/Amargos: {e.entregadoDisp || 0}
                                 </td>
                                 <td class="py-1 px-2 text-right align-top">
                                     ${e.montoTotal || 0}
