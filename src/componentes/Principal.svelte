@@ -40,9 +40,20 @@
     let clienteACrear = false;
 
     // acordeón de eliminados
-    let mostrarEliminados = true;
+    let mostrarEliminados = false;
+
+    // filtro de motivo para eliminados
+    let filtroMotivoElim = 'todos';
 
     const dias = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"];
+
+    // motivos fijos para baja
+    const MOTIVOS_ELIM = [
+        { clave: 'mala_atencion',  label: 'Mala atención del personal' },
+        { clave: 'mala_calidad',   label: 'Mala calidad de producto' },
+        { clave: 'costo_elevado',  label: 'Elevado costo del producto' },
+        { clave: 'competencia',    label: 'Competencia (bajo costo)' }
+    ];
 
     const setSync = (text) => { syncMsg = text || ''; };
     const toast = (msg) => { toastMsg = msg; setTimeout(() => (toastMsg = ''), 2200); };
@@ -271,11 +282,19 @@
         const confirmar = confirm(`¿Eliminar a ${nombre} del recorrido?`);
         if (!confirmar) return;
 
-        const motivoInput = prompt(`Motivo de eliminación para ${nombre}:`);
-        if (motivoInput === null) return;
-        const motivo = motivoInput.trim();
-        if (!motivo) {
-            alert('Debés ingresar un motivo para eliminar.');
+        // elegir motivo entre las 4 opciones
+        let mensaje = 'Elegí el motivo de eliminación (1-4):\n\n';
+        MOTIVOS_ELIM.forEach((m, i) => {
+            mensaje += `${i + 1}) ${m.label}\n`;
+        });
+
+        const input = prompt(mensaje);
+        if (input === null) return;
+
+        const num = Number(input.trim());
+        const motivoSel = MOTIVOS_ELIM[num - 1];
+        if (!motivoSel) {
+            alert('Opción inválida. No se eliminó el cliente.');
             return;
         }
 
@@ -292,7 +311,8 @@
 
             batch.update(refSelf, {
                 estado: 'eliminado',
-                motivoBaja: motivo,
+                motivoBaja: motivoSel.label,
+                motivoClave: motivoSel.clave,
                 fechaBaja: serverTimestamp(),
                 lastModified: serverTimestamp()
             });
@@ -346,13 +366,26 @@
         catch { return ''; }
     }
 
-    $: clientesEliminados = clientesCache
-        .filter(c => c.estado === 'eliminado')
+    // base: todos los eliminados
+    $: clientesEliminadosBase = clientesCache
+        .filter(c => c.estado === 'eliminado');
+
+    // list para mostrar según filtro de motivo
+    $: clientesEliminados = clientesEliminadosBase
+        .filter(c => filtroMotivoElim === 'todos' ? true : c.motivoClave === filtroMotivoElim)
         .sort((a, b) => {
             const ta = a.fechaBaja?.seconds ?? 0;
             const tb = b.fechaBaja?.seconds ?? 0;
             return tb - ta;
         });
+
+    // conteos por motivo
+    $: conteosMotivo = {
+        mala_atencion: clientesEliminadosBase.filter(c => c.motivoClave === 'mala_atencion').length,
+        mala_calidad:  clientesEliminadosBase.filter(c => c.motivoClave === 'mala_calidad').length,
+        costo_elevado: clientesEliminadosBase.filter(c => c.motivoClave === 'costo_elevado').length,
+        competencia:   clientesEliminadosBase.filter(c => c.motivoClave === 'competencia').length
+    };
 
     // -------- Empezar dia --------
     function abrirEmpezarDia() {
@@ -487,7 +520,7 @@
             </section>
         </div>
 
-        {#if clientesEliminados.length}
+        {#if clientesEliminadosBase.length}
             <div class="max-w-5xl mx-auto px-4 pb-6">
                 <section class="bg-[#111828] border border-red-800/60 rounded-lg mt-4 overflow-hidden">
                     <!-- "Acordeon" -->
@@ -501,7 +534,7 @@
                                 Clientes eliminados
                             </h2>
                             <span class="text-xs px-2 py-0.5 rounded-full bg-red-900 text-red-100">
-                                {clientesEliminados.length}
+                                {clientesEliminadosBase.length}
                             </span>
                         </div>
                         <span class="text-gray-400 text-lg">
@@ -511,6 +544,66 @@
 
                     {#if mostrarEliminados}
                         <div class="border-t border-red-800/60 p-4 max-h-80 overflow-y-auto">
+                            <!-- Filtros por motivo -->
+                            <div class="flex flex-wrap items-center gap-2 mb-3 text-xs">
+                                <span class="text-gray-300 mr-1">Motivo:</span>
+
+                                <button
+                                    type="button"
+                                    class="px-2 py-1 rounded-full border
+                                        {filtroMotivoElim === 'todos'
+                                            ? 'bg-red-700 text-white border-red-500'
+                                            : 'bg-transparent text-red-200 border-red-700 hover:bg-red-900/40'}"
+                                    on:click={() => filtroMotivoElim = 'todos'}
+                                >
+                                    Todos ({clientesEliminadosBase.length})
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="px-2 py-1 rounded-full border
+                                        {filtroMotivoElim === 'mala_atencion'
+                                            ? 'bg-red-700 text-white border-red-500'
+                                            : 'bg-transparent text-red-200 border-red-700 hover:bg-red-900/40'}"
+                                    on:click={() => filtroMotivoElim = 'mala_atencion'}
+                                >
+                                    Mala atención ({conteosMotivo.mala_atencion})
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="px-2 py-1 rounded-full border
+                                        {filtroMotivoElim === 'mala_calidad'
+                                            ? 'bg-red-700 text-white border-red-500'
+                                            : 'bg-transparent text-red-200 border-red-700 hover:bg-red-900/40'}"
+                                    on:click={() => filtroMotivoElim = 'mala_calidad'}
+                                >
+                                    Mala calidad ({conteosMotivo.mala_calidad})
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="px-2 py-1 rounded-full border
+                                        {filtroMotivoElim === 'costo_elevado'
+                                            ? 'bg-red-700 text-white border-red-500'
+                                            : 'bg-transparent text-red-200 border-red-700 hover:bg-red-900/40'}"
+                                    on:click={() => filtroMotivoElim = 'costo_elevado'}
+                                >
+                                    Costo elevado ({conteosMotivo.costo_elevado})
+                                </button>
+
+                                <button
+                                    type="button"
+                                    class="px-2 py-1 rounded-full border
+                                        {filtroMotivoElim === 'competencia'
+                                            ? 'bg-red-700 text-white border-red-500'
+                                            : 'bg-transparent text-red-200 border-red-700 hover:bg-red-900/40'}"
+                                    on:click={() => filtroMotivoElim = 'competencia'}
+                                >
+                                    Competencia ({conteosMotivo.competencia})
+                                </button>
+                            </div>
+
                             <ul class="space-y-2">
                                 {#each clientesEliminados as c (c.id)}
                                     <li class="bg-[#0c1124] border border-gray-700 rounded-lg p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2">

@@ -14,10 +14,12 @@
     // filtros realmente aplicados
     let filtroDiaRuta = 'todos';   // lunes, martes... o todos
     let filtroPeriodo = 'hoy';     // hoy, 7dias, 30dias, todo
+    let filtroNombre = '';         // nombre de cliente aplicado
 
-    // valores que se editan en los <select>
+    // valores que se editan en la UI
     let uiFiltroDiaRuta = 'todos';
     let uiFiltroPeriodo = 'hoy';
+    let uiFiltroNombre = '';       // texto del input
 
     // token para forzar recálculo de los $:
     let recalcToken = 0;
@@ -33,14 +35,12 @@
         const unsubscribe = onSnapshot(q, (snap) => {
             entregas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
             syncMsg = `Total entregas cargadas: ${entregas.length}`;
-            // cada vez que llegan datos nuevos, volvemos a filtrar
             recalcToken++;
         });
 
         return unsubscribe;
     });
 
-    // helper: pasar Timestamp / Date a Date JS
     function toJsDate(ts) {
         if (!ts) return null;
         try {
@@ -50,14 +50,12 @@
         }
     }
 
-    // helper: formatear fecha
     function fmtFecha(ts) {
         const d = toJsDate(ts);
         if (!d) return '';
         return d.toLocaleString();
     }
 
-    // determinar si entra en el periodo seleccionado
     function estaEnPeriodo(entrega) {
         const d = toJsDate(entrega.fecha);
         if (!d) return false;
@@ -91,23 +89,32 @@
     function aplicarFiltros() {
         filtroPeriodo = uiFiltroPeriodo;
         filtroDiaRuta = uiFiltroDiaRuta;
-        recalcToken++;    // fuerza recálculo
+        filtroNombre = (uiFiltroNombre || '').trim().toLowerCase();
+        recalcToken++;
     }
 
     // resetear filtros a valores por defecto
     function resetFiltros() {
         uiFiltroPeriodo = 'hoy';
         uiFiltroDiaRuta = 'todos';
+        uiFiltroNombre = '';
+
         filtroPeriodo = 'hoy';
         filtroDiaRuta = 'todos';
+        filtroNombre = '';
+
         recalcToken++;
     }
 
     // ---- filtro principal sobre las entregas ----
-    // recalcToken en la tupla garantiza que SIEMPRE se vuelva a evaluar
     $: entregasFiltradas = (recalcToken, entregas).filter(e => {
         if (filtroDiaRuta !== 'todos' && e.diaRuta !== filtroDiaRuta) return false;
         if (!estaEnPeriodo(e)) return false;
+
+        if (filtroNombre) {
+            const nombre = (e.nombreCliente || '').toLowerCase();
+            if (!nombre.includes(filtroNombre)) return false;
+        }
         return true;
     });
 
@@ -145,10 +152,23 @@
         <div>
             <h2 class="text-xl font-semibold">📊 Estadísticas de entregas</h2>
             <p class="text-xs text-gray-400 mt-1">{syncMsg}</p>
+            {#if filtroNombre}
+                <p class="text-xs text-blue-300 mt-1">
+                    Mostrando movimientos de: <span class="font-semibold">{uiFiltroNombre}</span>
+                </p>
+            {/if}
         </div>
 
         <!-- Filtros -->
         <div class="flex flex-wrap gap-2 text-sm items-center">
+            <!-- Buscar cliente -->
+            <input
+                type="text"
+                placeholder="Buscar cliente..."
+                class="bg-[#0c1222] border border-gray-700 rounded-md px-2 py-1 text-gray-200 w-40 md:w-52"
+                bind:value={uiFiltroNombre}
+            />
+
             <select
                 bind:value={uiFiltroPeriodo}
                 class="bg-[#0c1222] border border-gray-700 rounded-md px-2 py-1 text-gray-200"
@@ -217,7 +237,6 @@
             Jugos o Amargos: <span class="font-semibold">{totalDisp}</span>
         </p>
     </section>
-
 
     <!-- Tabla de entregas -->
     <section class="bg-[#111828] border border-gray-700 rounded-lg p-3">
