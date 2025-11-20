@@ -52,10 +52,10 @@
 
     // motivos fijos para baja
     const MOTIVOS_ELIM = [
-        { clave: 'mala_atencion',  label: 'Mala atención del personal' },
-        { clave: 'mala_calidad',   label: 'Mala calidad de producto' },
-        { clave: 'costo_elevado',  label: 'Elevado costo del producto' },
-        { clave: 'competencia',    label: 'Competencia (bajo costo)' }
+        { clave: 'mala_atencion',  p: 'Mala atención del personal' },
+        { clave: 'mala_calidad',   p: 'Mala calidad de producto' },
+        { clave: 'costo_elevado',  p: 'Elevado costo del producto' },
+        { clave: 'competencia',    p: 'Competencia (bajo costo)' }
     ];
 
     const setSync = (text) => { syncMsg = text || ''; };
@@ -292,7 +292,7 @@
         // elegir motivo entre las 4 opciones
         let mensaje = 'Elegí el motivo de eliminación (1-4):\n\n';
         MOTIVOS_ELIM.forEach((m, i) => {
-            mensaje += `${i + 1}) ${m.label}\n`;
+            mensaje += `${i + 1}) ${m.p}\n`;
         });
 
         const input = prompt(mensaje);
@@ -318,7 +318,7 @@
 
             batch.update(refSelf, {
                 estado: 'eliminado',
-                motivoBaja: motivoSel.label,
+                motivoBaja: motivoSel.p,
                 motivoClave: motivoSel.clave,
                 fechaBaja: serverTimestamp(),
                 lastModified: serverTimestamp()
@@ -438,18 +438,18 @@
             <div class="flex items-center gap-1 text-xs md:text-sm">
                 <button
                     class="px-2 py-1 rounded-md border
-                           {vista === 'clientes'
-                               ? 'bg-blue-600 border-blue-500 text-white'
-                               : 'bg-transparent border-gray-600 text-gray-300 hover:bg-gray-800'}"
+                        {vista === 'clientes'
+                            ? 'bg-blue-600 border-blue-500 text-white'
+                            : 'bg-transparent border-gray-600 text-gray-300 hover:bg-gray-800'}"
                     on:click={() => vista = 'clientes'}
                 >
                     📋 Clientes
                 </button>
                 <button
                     class="px-2 py-1 rounded-md border
-                           {vista === 'estadisticas'
-                               ? 'bg-blue-600 border-blue-500 text-white'
-                               : 'bg-transparent border-gray-600 text-gray-300 hover:bg-gray-800'}"
+                        {vista === 'estadisticas'
+                            ? 'bg-blue-600 border-blue-500 text-white'
+                            : 'bg-transparent border-gray-600 text-gray-300 hover:bg-gray-800'}"
                     on:click={() => vista = 'estadisticas'}
                 >
                     📊 Estadísticas
@@ -492,7 +492,7 @@
                 </div>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
                     <div class="flex flex-col gap-1">
-                        <label class="text-xs text-gray-400">20L</label>
+                        <p class="text-xs text-gray-400">20L</p>
                         <input
                             type="number"
                             class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-xs text-gray-100"
@@ -501,7 +501,7 @@
                         />
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="text-xs text-gray-400">12L</label>
+                        <p class="text-xs text-gray-400">12L</p>
                         <input
                             type="number"
                             class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-xs text-gray-100"
@@ -510,7 +510,7 @@
                         />
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="text-xs text-gray-400">Sifón</label>
+                        <p class="text-xs text-gray-400">Sifón</p>
                         <input
                             type="number"
                             class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-xs text-gray-100"
@@ -519,7 +519,7 @@
                         />
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="text-xs text-gray-400">Jugos o Amargos</label>
+                        <p class="text-xs text-gray-400">Jugos o Amargos</p>
                         <input
                             type="number"
                             class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-xs text-gray-100"
