@@ -196,6 +196,16 @@
         if (index > 0) index -= 1;
     }
 
+    
+    // pedir al padre que abra el modal de "Crear cliente"
+    function agregarClienteDesdeRuta() {
+        if (!clienteActual) return;
+        dispatch('agregarCliente', {
+            dia: clienteActual.diaEntrega,
+            ordenSugerido: Number(clienteActual.orden) + 1
+        });
+    }
+
     // Navegación con teclado
     function onKey(e) {
         if (e.key === 'ArrowRight') { e.preventDefault(); siguiente(); }
@@ -243,8 +253,17 @@
                     {#if clienteActual.telefono} - {clienteActual.telefono}{/if}
                 </div>
 
-                <div class="text-sm text-gray-400">
-                    {mostrarStock(clienteActual)}
+                <!-- STOCK + AGREGAR CLIENTE -->
+                <div class="flex items-center justify-between text-sm">
+                    <span class="text-gray-400">{mostrarStock(clienteActual)}</span>
+
+                    <button
+                        type="button"
+                        class="px-3 py-1.5 rounded-md text-xs bg-blue-600 hover:bg-blue-700 text-white"
+                        on:click={agregarClienteDesdeRuta}
+                    >
+                        ➕ Agregar cliente
+                    </button>
                 </div>
 
                 <div class="text-xs text-gray-500">
@@ -409,9 +428,8 @@
                             bind:value={entrega.medioPago}
                         >
                             <option value="efectivo">efectivo</option>
-                            <option value="transferencia">transferencia</option>
                             <option value="mercado_pago">mercado pago</option>
-                            <option value="otro">otro</option>
+                            <option value="fiado">fiado</option>
                         </select>
                     </div>
 

@@ -38,6 +38,9 @@
     let filtroEstado = 'todos';
     let clienteAEditar = null;
     let clienteACrear = false;
+    let volverALaRuta = false;
+    let diaPorDefecto = '';  // defaults cuando se crea cliente desde recorrido
+    let ordenPorDefecto = '';
 
     // acordeón de eliminados
     let mostrarEliminados = false;
@@ -172,6 +175,10 @@
 
             clienteACrear = false;
             toast(`Cliente guardado ✔ (insertado en orden ${k})`);
+            if (volverALaRuta) {
+            mostrarEmpezar = true;
+            volverALaRuta = false;
+            }   
         } catch (err) {
             console.error('[ADD batch] ERROR', err);
             alert(`❌ No se pudo guardar. ${err?.message ?? ''}`);
@@ -387,6 +394,13 @@
         competencia:   clientesEliminadosBase.filter(c => c.motivoClave === 'competencia').length
     };
 
+    // mientras el recorrido esta abierto, mantengo sincronizada la lista del dia
+    $: if (mostrarEmpezar && filtroDia !== 'todos') {
+        clientesDelDia = clientesCache
+            .filter(c => c.diaEntrega === filtroDia && c.estado !== 'eliminado')
+            .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
+    }
+
     // -------- Empezar dia --------
     function abrirEmpezarDia() {
         if (filtroDia === 'todos') {
@@ -403,12 +417,22 @@
         }
         mostrarEmpezar = true;
     }
+
+    // handler cuando EmpezarDia pide crear un cliente
+    function handleAgregarClienteDesdeRuta(e) {
+        const { dia, ordenSugerido } = e.detail || {};
+        diaPorDefecto = dia || filtroDia;
+        ordenPorDefecto = ordenSugerido ?? '';
+        volverALaRuta = true;
+        mostrarEmpezar = false;
+        clienteACrear = true;
+    }
 </script>
 
 <div>
     <!-- HEADER -->
     <header class="sticky top-0 z-10 flex items-center justify-between bg-[#0f172a] p-4 border-b border-gray-700">
-        <h1 class="text-lg font-semibold">Reparto de Agua</h1>
+        <h1 class="text-lg font-semibold">Reparto de Agua 🚍</h1>
 
         <div class="flex items-center gap-3">
             <div class="flex items-center gap-1 text-xs md:text-sm">
@@ -447,7 +471,11 @@
                 bind:dia={filtroDia}
                 bind:estado={filtroEstado}
                 total={totalClientes}
-                on:crear={() => (clienteACrear = true)}
+                    on:crear={() => {
+                    diaPorDefecto = '';
+                    ordenPorDefecto = '';
+                    clienteACrear = true;
+                }}
             />
 
             <!-- PRECIOS BASE -->
@@ -647,11 +675,19 @@
     {/if}
 
     {#if clienteACrear}
-        <FormCrear
-            on:crear={handleCrearCliente}
-            on:cerrar={() => (clienteACrear = false)}
+    <FormCrear
+        on:crear={handleCrearCliente}
+        on:cerrar={() => {
+            clienteACrear = false;
+            // si veníamos desde Empezar Día, lo reabrimos
+            if (volverALaRuta) {
+                mostrarEmpezar = true;
+                volverALaRuta = false;
+            }
+            }}
         />
     {/if}
+
 
     {#if toastMsg}
         <div class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded">
@@ -660,12 +696,13 @@
     {/if}
 </div>
 
-{#if mostrarEmpezar}
+    {#if mostrarEmpezar}
     <EmpezarDia
         clientes={clientesDelDia}
         preciosBase={preciosBase}
         on:cerrar={() => (mostrarEmpezar = false)}
         on:guardar={handleGuardarEdicion}
         on:registrarEntrega={handleRegistrarEntrega}
-    />
-{/if}
+        on:agregarCliente={handleAgregarClienteDesdeRuta}
+        />
+    {/if}

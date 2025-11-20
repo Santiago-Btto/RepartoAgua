@@ -3,6 +3,8 @@
     const dispatch = createEventDispatcher();
 
     export let guardando = false; 
+    export let diaInicial = '';
+    export let ordenInicial = '';
 
     let data = {
         nombre: '',
@@ -17,6 +19,13 @@
         orden: '',
         notas: ''
     };
+
+    $: if (diaInicial && data.diaEntrega !== diaInicial) {
+        data.diaEntrega = diaInicial;
+    }
+    $: if (ordenInicial && !data.orden) {
+        data.orden = ordenInicial;
+    }
 
     function sanitizeForCreate(src) {
         return {
