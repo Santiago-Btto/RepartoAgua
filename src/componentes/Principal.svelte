@@ -41,6 +41,7 @@
     let volverALaRuta = false;
     let diaPorDefecto = '';  // defaults cuando se crea cliente desde recorrido
     let ordenPorDefecto = '';
+    let historialCliente = [];   // historial de entregas del cliente que se está editando
 
     // acordeón de eliminados
     let mostrarEliminados = false;
@@ -274,11 +275,17 @@
                 fecha: serverTimestamp()
             });
             toast('Entrega registrada ✔');
+
+            // si estoy editando ese cliente, recargo su historial
+            if (clienteAEditar && clienteAEditar.id === data.clienteId) {
+                await cargarHistorialCliente(data.clienteId);
+            }
         } catch (err) {
             console.error('[ENTREGA] ERROR', err);
             alert('No se pudo registrar la entrega.');
         }
     }
+
 
     // -------- ELIMINAR (soft delete) --------
     async function handleEliminarCliente(e) {
@@ -340,6 +347,23 @@
             alert('No se pudo eliminar.');
         }
     }
+
+    // -------- HISTORIAL DE UN CLIENTE --------
+    async function cargarHistorialCliente(clienteId) {
+        try {
+            const ref = collection(db, 'entregas');
+            const qHist = query(
+                ref,
+                where('clienteId', '==', clienteId),
+                orderBy('fecha', 'desc')
+            );
+            const snap = await getDocs(qHist);
+            historialCliente = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        } catch (err) {
+            console.error('[HISTORIAL cliente] ERROR', err);
+        }
+    }
+
 
     // -------- Derivados --------
     $: totalClientes = clientesCache.filter(c => c.estado !== 'eliminado').length;
@@ -427,6 +451,14 @@
         mostrarEmpezar = false;
         clienteACrear = true;
     }
+
+    // abrir modal de edicion y cargar historial del cliente
+    async function handleEditarCliente(e) {
+        const c = e.detail;
+        clienteAEditar = c;
+        await cargarHistorialCliente(c.id);
+    }
+
 </script>
 
 <div>
@@ -542,9 +574,10 @@
             <section class="bg-[#111828] border border-gray-700 rounded-lg p-4">
                 <ListaClientes
                     grupos={gruposRender}
-                    on:editar={e => (clienteAEditar = e.detail)}
+                    on:editar={handleEditarCliente}
                     on:eliminar={handleEliminarCliente}
                 />
+
             </section>
         </div>
 
@@ -667,12 +700,16 @@
     {/if}
 
     {#if clienteAEditar}
-        <ModalEditar
-            cliente={clienteAEditar}
-            on:guardar={handleGuardarEdicion}
-            on:cerrar={() => (clienteAEditar = null)}
-        />
+    <ModalEditar
+        cliente={clienteAEditar}
+        preciosBase={preciosBase}
+        movimientos={historialCliente}
+        on:guardar={handleGuardarEdicion}
+        on:registrarEntrega={handleRegistrarEntrega}
+        on:cerrar={() => (clienteAEditar = null)}
+    />
     {/if}
+
 
     {#if clienteACrear}
     <FormCrear
