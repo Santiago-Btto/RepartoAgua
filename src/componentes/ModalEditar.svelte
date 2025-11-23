@@ -8,7 +8,7 @@
 
     const dispatch = createEventDispatcher();
     let data = { ...cliente };
-
+    console.log(data)
     // ===== AGREGAR PEDIDO (como EmpezarDia) =====
     let pedido = {
         cant20: '',
@@ -62,7 +62,7 @@
         const estadoPago =
             cobrado >= total ? "pagado" :
             cobrado > 0      ? "parcial" :
-                               "pendiente";
+                            "pendiente";
 
         const payload = {
             clienteId: cliente.id,
@@ -176,7 +176,7 @@
         </div>
 
         <!-- ============================
-              FORM ORIGINAL 
+            FORM ORIGINAL 
         ============================== -->
         <form on:submit|preventDefault={handleSave}>
             <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[350px] overflow-y-auto p-1">
@@ -238,6 +238,25 @@
                     <input class={inputClass} type="number" bind:value={data.stockDispenser} />
                 </div>
 
+                <div>
+                    <p class="text-sm text-gray-400 mb-2">¿Tiene Dispenser?</p>
+                    
+                    <button 
+                        title=""
+                        type="button" 
+                        class="relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-0 {data.dispenser ? 'bg-green-500' : 'bg-gray-700'}"
+                        on:click={() => data.dispenser = !data.dispenser}
+                    >
+                        <span 
+                            class="inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-200 {data.dispenser ? 'translate-x-6' : 'translate-x-1'}"
+                        ></span>
+                    </button>
+                    
+                    <span class="ml-2 text-sm {data.dispenser ? 'text-green-400' : 'text-gray-500'}">
+                        {data.dispenser ? 'Si' : 'No'}
+                    </span>
+                </div>
+
                 <div class="col-span-full mt-2">
                     <p class="text-sm text-gray-400">Notas</p>
                     <textarea class={inputClass} rows="2" bind:value={data.notas}></textarea>
@@ -263,7 +282,7 @@
         </form>
 
         <!-- ==================================
-              AGREGAR PEDIDO (DESPLEGABLE)
+            AGREGAR PEDIDO (DESPLEGABLE)
         ================================== -->
         {#if mostrarAgregarPedido}
             <div class="mt-6 border-t border-gray-700 pt-4">
@@ -328,7 +347,7 @@
         {/if}
 
         <!-- ==================================
-              HISTORIAL DEL CLIENTE (DESPLEGABLE)
+            HISTORIAL DEL CLIENTE (DESPLEGABLE)
         ================================== -->
         {#if mostrarHistorial}
             <div class="mt-6 border-t border-gray-700 pt-4">

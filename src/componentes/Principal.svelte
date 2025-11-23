@@ -74,7 +74,8 @@
             stockSif: Number(data.stockSif) || 0,
             stockDispenser: Number(data.stockDispenser) || 0,
             orden: Number(data.orden),
-            notas: (data.notas || '').trim()
+            notas: (data.notas || '').trim(),
+            dispenser: data.dispenser || false
         };
     }
 
