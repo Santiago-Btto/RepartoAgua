@@ -116,6 +116,36 @@
     $: totalComprado = movimientos.reduce((a,m)=>a+(m.montoTotal||0),0);
     $: totalCobrado  = movimientos.reduce((a,m)=>a+(m.montoCobrado||0),0);
     $: saldo = totalComprado - totalCobrado;  // >0 debe, <0 a favor
+
+    // litros comprados en toda la historia
+    $: total20  = movimientos.reduce((a,m)=>a+(m.entregado20  ||0),0);
+    $: total12  = movimientos.reduce((a,m)=>a+(m.entregado12  ||0),0);
+    $: totalSif = movimientos.reduce((a,m)=>a+(m.entregadoSif ||0),0);
+    $: totalDisp= movimientos.reduce((a,m)=>a+(m.entregadoDisp||0),0);
+
+    // cantidad de pedidos
+    $: cantPedidos = movimientos.length;
+
+    // ticket promedio
+    $: ticketPromedio = cantPedidos ? (totalComprado / cantPedidos) : 0;
+
+    // TOTAL fiado historico (solo lo que no se pagó de cada pedido)
+    $: totalFiadoHistorico = movimientos.reduce(
+        (a,m)=>a+((m.montoTotal||0)-(m.montoCobrado||0)),
+        0
+    );
+
+    // ultima compra
+    $: ultimoMovimiento = movimientos.length
+        ? movimientos[movimientos.length - 1]
+        : null;
+
+    // distribucion de medios de pago (conteo simple)
+    $: pagosPorMedio = movimientos.reduce((acc,m)=>{
+        const medio = m.medioPago || 'desconocido';
+        acc[medio] = (acc[medio] || 0) + 1;
+        return acc;
+    }, {});
 </script>
 
 <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -305,11 +335,48 @@
 
                 <h3 class="text-base font-semibold text-white mb-2">Historial de pedidos</h3>
 
-                <p class="text-xs text-gray-400 mb-2">
-                    Total comprado: ${totalComprado} • Cobrado: ${totalCobrado} •
+                <p class="text-xs text-gray-300 mb-1">
+                    Total comprado: <b>${totalComprado}</b> •
+                    Cobrado: <b>${totalCobrado}</b> •
                     Saldo:
-                    <span class={saldo > 0 ? "text-amber-300" : "text-emerald-300"}>${saldo}</span>
+                    <span class={saldo > 0 ? "text-amber-300" : "text-emerald-300"}>
+                        ${saldo}
+                    </span>
                     {#if saldo > 0}(debe){:else if saldo < 0}(a favor){/if}
+                </p>
+
+                <p class="text-xs text-gray-300 mb-1">
+                    Litros totales:
+                    20L <b>{total20}</b> •
+                    12L <b>{total12}</b> •
+                    Sifones <b>{totalSif}</b> •
+                    Jugos/Amargos <b>{totalDisp}</b>
+                </p>
+
+                <p class="text-xs text-gray-300 mb-1">
+                    Pedidos registrados: <b>{cantPedidos}</b> •
+                    Ticket promedio: <b>${ticketPromedio.toFixed(0)}</b>
+                </p>
+
+                <p class="text-xs text-gray-300 mb-1">
+                    Total fiado historico:
+                    <b class="text-amber-300">${totalFiadoHistorico}</b>
+                </p>
+
+                {#if ultimoMovimiento}
+                    <p class="text-xs text-gray-300 mb-1">
+                        Ultima compra:
+                        <b>{fmt(ultimoMovimiento.fecha)}</b> •
+                        Total: <b>${ultimoMovimiento.montoTotal}</b> •
+                        Medio de pago: <b>{ultimoMovimiento.medioPago}</b>
+                    </p>
+                {/if}
+
+                <p class="text-xs text-gray-400 mb-2">
+                    Medios de pago usados:
+                    {#each Object.entries(pagosPorMedio) as [medio, cant]}
+                        <span class="ml-2">{medio}: {cant}</span>
+                    {/each}
                 </p>
 
                 {#if movimientos.length === 0}

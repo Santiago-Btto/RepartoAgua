@@ -348,21 +348,29 @@
         }
     }
 
-    // -------- HISTORIAL DE UN CLIENTE --------
+    /// -------- HISTORIAL DE UN CLIENTE --------
     async function cargarHistorialCliente(clienteId) {
         try {
             const ref = collection(db, 'entregas');
             const qHist = query(
                 ref,
-                where('clienteId', '==', clienteId),
-                orderBy('fecha', 'desc')
+                where('clienteId', '==', clienteId)
             );
             const snap = await getDocs(qHist);
-            historialCliente = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+            // ordeno por fecha de forma ascendente usando el campo timestamp
+            historialCliente = snap.docs
+                .map(d => ({ id: d.id, ...d.data() }))
+                .sort((a, b) => {
+                    const ta = a.fecha?.seconds ?? 0;
+                    const tb = b.fecha?.seconds ?? 0;
+                    return ta - tb;
+                });
         } catch (err) {
             console.error('[HISTORIAL cliente] ERROR', err);
         }
     }
+
 
 
     // -------- Derivados --------
