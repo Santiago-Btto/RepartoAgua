@@ -63,20 +63,31 @@
     const toast = (msg) => { toastMsg = msg; setTimeout(() => (toastMsg = ''), 2200); };
 
     function normalizarCliente(data) {
-        return {
-            nombre: (data.nombre || '').trim(),
-            direccion: (data.direccion || '').trim(),
-            telefono: ((data.telefono ?? '') + '').trim(),
-            diaEntrega: data.diaEntrega,
-            estado: data.estado || 'activo',
-            stock20: Number(data.stock20) || 0,
-            stock12: Number(data.stock12) || 0,
-            stockSif: Number(data.stockSif) || 0,
-            stockDispenser: Number(data.stockDispenser) || 0,
-            orden: Number(data.orden),
-            notas: (data.notas || '').trim()
-        };
-    }
+    // normalizo telefono: me quedo solo con el ultimo numero que escribio
+    let telRaw = ((data.telefono ?? '') + '').trim();
+
+    // limpio espacios y me quedo con el ultimo no vacio
+    let partes = telRaw
+        .split('-')
+        .map(p => p.trim())
+        .filter(p => p.length > 0);
+
+    let telefonoSolo = partes.length ? partes[partes.length - 1] : '';
+
+    return {
+        nombre: (data.nombre || '').trim(),
+        direccion: (data.direccion || '').trim(),
+        telefono: telefonoSolo,
+        diaEntrega: data.diaEntrega,
+        estado: data.estado || 'activo',
+        stock20: Number(data.stock20) || 0,
+        stock12: Number(data.stock12) || 0,
+        stockSif: Number(data.stockSif) || 0,
+        stockDispenser: Number(data.stockDispenser) || 0,
+        orden: Number(data.orden),
+        notas: (data.notas || '').trim()
+    };
+}
 
     // ---- CONFIG DE PRECIOS ----
     async function cargarPrecios() {

@@ -145,6 +145,16 @@
         (acc, e) => acc + (Number(e.entregadoDisp) || 0),
         0
     );
+    $: conteoMedios = entregasFiltradas.reduce((acc, e) => {
+        const medio = e.medioPago || 'sin_dato';
+        acc[medio] = (acc[medio] || 0) + 1;
+        return acc;
+    }, {});
+
+    // tipo de pago
+    $: cantEfectivo    = conteoMedios.efectivo     || 0;
+    $: cantMercadoPago = conteoMedios.mercado_pago || 0;
+    $: cantFiado       = conteoMedios.fiado        || 0;
 </script>
 
 <div class="max-w-5xl mx-auto p-4 grid gap-4">
@@ -260,6 +270,7 @@
                             <th class="py-1 px-2 text-right">Venta</th>
                             <th class="py-1 px-2 text-right">Cobrado</th>
                             <th class="py-1 px-2 text-right">Pendiente</th>
+                            <th class="py-1 px-2 text-left">Medio pago</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -283,11 +294,19 @@
                                 <td class="py-1 px-2 text-right align-top text-amber-300">
                                     {(Number(e.montoTotal) || 0) - (Number(e.montoCobrado) || 0)}
                                 </td>
+                                <td class="py-1 px-2 align-top">
+                                    {e.medioPago || 'sin dato'}
+                                </td>
                             </tr>
                         {/each}
                     </tbody>
                 </table>
             </div>
+                <p class="text-xs text-gray-400 mt-2">
+                efectivo: {cantEfectivo} •
+                mercado pago: {cantMercadoPago} •
+                fiado: {cantFiado}
+            </p>
         {/if}
     </section>
 </div>
