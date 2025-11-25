@@ -19,31 +19,31 @@
         }
     }
 
-    const inputClass = "w-full bg-gray-800 border border-gray-600 rounded-md p-3 text-white focus:ring-blue-500 focus:border-blue-500";
+    const inputClass = "w-full bg-white shadow-sm border border-gray-600 rounded-md p-3 text-gray-900 focus:ring-blue-500 focus:border-blue-500";
 </script>
 
-<div class="min-h-screen flex items-center justify-center bg-gray-900 p-4">
-    <div class="w-full max-w-md bg-gray-800 border border-gray-700 rounded-xl p-8 shadow-2xl">
-        <h1 class="text-2xl font-bold text-center text-blue-400 mb-6">Reparto de Agua</h1>
+<div class="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+    <div class="w-full max-w-md bg-white shadow-sm border border-gray-300 rounded-xl p-8 shadow-2xl">
+        <h1 class="text-2xl font-bold text-center text-blue-600 mb-6">Reparto de Agua</h1>
         
         <form on:submit|preventDefault={handleLogin} class="space-y-4">
         <div>
-            <p class="text-sm text-gray-400">Email</p>
+            <p class="text-sm text-gray-500">Email</p>
             <input type="email" class={inputClass} bind:value={email} required placeholder="admin@ejemplo.com">
         </div>
         
         <div>
-            <p class="text-sm text-gray-400">Contraseña</p>
+            <p class="text-sm text-gray-500">Contraseña</p>
             <input type="password" class={inputClass} bind:value={password} required placeholder="••••••">
         </div>
 
         {#if error}
-            <div class="p-3 bg-red-900/50 border border-red-700 text-red-200 text-sm rounded">
+            <div class="p-3 bg-red-800/50 border border-red-700 text-gray-800 text-sm rounded">
             {error}
             </div>
         {/if}
 
-        <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition">
+        <button type="submit" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white text-gray-900 font-bold rounded-lg transition">
             Entrar
         </button>
         </form>

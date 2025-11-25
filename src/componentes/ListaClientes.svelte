@@ -55,30 +55,30 @@
         {#each grupos as grupo (grupo.dia)}
             <!-- CABECERA DESPLEGABLE DEL DIA -->
             <button
-                class="w-full flex justify-between items-center bg-[#0c1124] border border-gray-700 rounded-lg px-4 py-2 mt-4 text-left"
+                class="w-full flex justify-between items-center bg-gray-50 border border-gray-300 rounded-lg px-4 py-2 mt-4 text-left"
                 on:click={() => toggle(grupo.dia)}
             >
                 <div class="flex flex-col">
-                    <span class="text-blue-300 font-semibold text-lg">
+                    <span class="text-blue-600 font-semibold text-lg">
                         {grupo.dia.toUpperCase()}
-                        <span class="ml-2 text-gray-400">({grupo.clientes.length})</span>
+                        <span class="ml-2 text-gray-500">({grupo.clientes.length})</span>
                     </span>
                 </div>
 
-                <span class="text-gray-300 text-sm">
+                <span class="text-gray-700 text-sm">
                     {abiertos[grupo.dia] ? '▲' : '▼'}
                 </span>
             </button>
 
             {#if abiertos[grupo.dia]}
                 <!-- totales del dia -->
-                <p class="text-xs text-gray-400 mt-1 px-1">
+                <p class="text-xs text-gray-500 mt-1 px-1">
                     {totalesDiaTexto(grupo)}
                 </p>
 
                 <!-- Lista de clientes del dia -->
                 {#each grupo.clientes as c (c.id)}
-                    <div class="flex justify-between bg-[#0c1124] border border-gray-700 rounded-lg mb-2 p-3 mt-1">
+                    <div class="flex justify-between bg-gray-50 border border-gray-300 rounded-lg mb-2 p-3 mt-1">
                         <div class="flex flex-col gap-2">
                             <div class="flex items-center gap-2">
                                 <p class="text-lg">{c.nombre}</p>
@@ -86,23 +86,23 @@
                                     {c.estado}
                                 </span>
                             </div>
-                            <p class="text-sm text-gray-300">
+                            <p class="text-sm text-gray-700">
                                 {c.direccion ?? ''} - {c.telefono ?? ''}
                             </p>
-                            <p class="text-sm text-gray-400">{mostrarStock(c)}</p>
+                            <p class="text-sm text-gray-500">{mostrarStock(c)}</p>
                             <p class="text-gray-500 text-xs">Mod: {fmt(c.lastModified)}</p>
                         </div>
                         <div class="flex flex-col">
                             <p class="text-sm text-end mb-7">Orden: {c.orden}</p>
                             <div class="flex gap-2">
                                 <button
-                                    class="text-sm text-gray-400 hover:text-white"
+                                    class="text-sm text-gray-500 hover:text-gray-900"
                                     on:click={() => dispatch('editar', c)}
                                 >
                                     Editar
                                 </button>
                                 <button
-                                    class="text-sm text-red-400 hover:text-red-300"
+                                    class="text-sm text-red-400 hover:text-red-500"
                                     on:click={() => dispatch('eliminar', c)}
                                 >
                                     Eliminar

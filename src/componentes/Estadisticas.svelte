@@ -161,9 +161,9 @@
     <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <div>
             <h2 class="text-xl font-semibold">📊 Estadísticas de entregas</h2>
-            <p class="text-xs text-gray-400 mt-1">{syncMsg}</p>
+            <p class="text-xs text-gray-500 mt-1">{syncMsg}</p>
             {#if filtroNombre}
-                <p class="text-xs text-blue-300 mt-1">
+                <p class="text-xs text-blue-600 mt-1">
                     Mostrando movimientos de: <span class="font-semibold">{uiFiltroNombre}</span>
                 </p>
             {/if}
@@ -175,13 +175,13 @@
             <input
                 type="text"
                 placeholder="Buscar cliente..."
-                class="bg-[#0c1222] border border-gray-700 rounded-md px-2 py-1 text-gray-200 w-40 md:w-52"
+                class="bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 w-40 md:w-52"
                 bind:value={uiFiltroNombre}
             />
 
             <select
                 bind:value={uiFiltroPeriodo}
-                class="bg-[#0c1222] border border-gray-700 rounded-md px-2 py-1 text-gray-200"
+                class="bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800"
             >
                 <option value="hoy">Hoy</option>
                 <option value="7dias">Últimos 7 días</option>
@@ -191,7 +191,7 @@
 
             <select
                 bind:value={uiFiltroDiaRuta}
-                class="bg-[#0c1222] border border-gray-700 rounded-md px-2 py-1 text-gray-200"
+                class="bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800"
             >
                 <option value="todos">Todos los días</option>
                 <option value="lunes">lunes</option>
@@ -205,7 +205,7 @@
 
             <button
                 type="button"
-                class="px-3 py-1 rounded-md bg-blue-600 hover:bg-blue-700 text-white"
+                class="px-3 py-1 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-gray-900"
                 on:click={aplicarFiltros}
             >
                 Aplicar filtros
@@ -213,7 +213,7 @@
 
             <button
                 type="button"
-                class="px-3 py-1 rounded-md bg-gray-700 hover:bg-gray-600 text-gray-100"
+                class="px-3 py-1 rounded-md bg-gray-200 hover:bg-gray-300"
                 on:click={resetFiltros}
             >
                 Reset
@@ -223,24 +223,24 @@
 
     <!-- Cards de resumen -->
     <section class="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div class="bg-[#111828] border border-gray-700 rounded-lg p-3">
-            <p class="text-xs text-gray-400">Ventas (monto total)</p>
+        <div class="bg-white border border-gray-300 rounded-lg p-3">
+            <p class="text-xs text-gray-500">Ventas (monto total)</p>
             <p class="text-2xl font-semibold mt-1">${totalVentas}</p>
         </div>
-        <div class="bg-[#111828] border border-gray-700 rounded-lg p-3">
-            <p class="text-xs text-gray-400">Cobrado</p>
-            <p class="text-2xl font-semibold mt-1 text-emerald-300">${totalCobrado}</p>
+        <div class="bg-white border border-gray-300 rounded-lg p-3">
+            <p class="text-xs text-gray-500">Cobrado</p>
+            <p class="text-2xl font-semibold mt-1 text-emerald-600">${totalCobrado}</p>
         </div>
-        <div class="bg-[#111828] border border-gray-700 rounded-lg p-3">
-            <p class="text-xs text-gray-400">Pendiente de cobro</p>
-            <p class="text-2xl font-semibold mt-1 text-amber-300">${totalPendiente}</p>
+        <div class="bg-white border border-gray-300 rounded-lg p-3">
+            <p class="text-xs text-gray-500">Pendiente de cobro</p>
+            <p class="text-2xl font-semibold mt-1 text-amber-500">${totalPendiente}</p>
         </div>
     </section>
 
     <!-- Totales de unidades -->
-    <section class="bg-[#111828] border border-gray-700 rounded-lg p-3">
-        <h3 class="text-sm font-semibold text-gray-200 mb-2">Unidades entregadas</h3>
-        <p class="text-sm text-gray-300">
+    <section class="bg-white border border-gray-300 rounded-lg p-3">
+        <h3 class="text-sm font-semibold text-gray-800 mb-2">Unidades entregadas</h3>
+        <p class="text-sm text-gray-700">
             20L: <span class="font-semibold">{total20}</span> &nbsp;•&nbsp;
             12L: <span class="font-semibold">{total12}</span> &nbsp;•&nbsp;
             Sifones: <span class="font-semibold">{totalSif}</span> &nbsp;•&nbsp;
@@ -249,9 +249,9 @@
     </section>
 
     <!-- Tabla de entregas -->
-    <section class="bg-[#111828] border border-gray-700 rounded-lg p-3">
+    <section class="bg-white border border-gray-300 rounded-lg p-3">
         <div class="flex items-center justify-between mb-2">
-            <h3 class="text-sm font-semibold text-gray-200">
+            <h3 class="text-sm font-semibold text-gray-800">
                 Entregas filtradas ({entregasFiltradas.length})
             </h3>
         </div>
@@ -262,7 +262,7 @@
             <div class="overflow-x-auto text-xs">
                 <table class="min-w-full border-collapse">
                     <thead>
-                        <tr class="border-b border-gray-700 text-gray-400">
+                        <tr class="border-b border-gray-300 text-gray-500">
                             <th class="py-1 pr-2 text-left">Fecha</th>
                             <th class="py-1 px-2 text-left">Cliente</th>
                             <th class="py-1 px-2 text-left">Día</th>
@@ -288,10 +288,10 @@
                                 <td class="py-1 px-2 text-right align-top">
                                     ${e.montoTotal || 0}
                                 </td>
-                                <td class="py-1 px-2 text-right align-top text-emerald-300">
+                                <td class="py-1 px-2 text-right align-top text-emerald-600">
                                     ${e.montoCobrado || 0}
                                 </td>
-                                <td class="py-1 px-2 text-right align-top text-amber-300">
+                                <td class="py-1 px-2 text-right align-top text-amber-500">
                                     {(Number(e.montoTotal) || 0) - (Number(e.montoCobrado) || 0)}
                                 </td>
                                 <td class="py-1 px-2 align-top">
@@ -302,7 +302,7 @@
                     </tbody>
                 </table>
             </div>
-                <p class="text-xs text-gray-400 mt-2">
+                <p class="text-xs text-gray-500 mt-2">
                 efectivo: {cantEfectivo} •
                 mercado pago: {cantMercadoPago} •
                 fiado: {cantFiado}

@@ -104,8 +104,7 @@
     }
 
     // ====== Guardar cliente ======
-    const inputClass =
-        "w-full bg-gray-900 border border-gray-700 rounded-md p-2 text-gray-200 focus:ring-blue-500 focus:border-blue-500";
+    const inputClass = "w-full bg-white border border-gray-300 rounded-md p-2 text-gray-900 focus:ring-blue-500 focus:border-blue-500 shadow-sm";
 
     function handleSave() {
         dispatch('guardar', data);
@@ -151,7 +150,7 @@
 <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" on:click={() => dispatch('cerrar')}></div>
 
-    <div class="relative w-full max-w-3xl bg-[#0c1222] border border-gray-700 rounded-lg shadow-lg p-6 max-h-[90vh] overflow-y-auto">
+    <div class="relative w-full max-w-3xl bg-white border border-gray-300 rounded-lg shadow-lg p-6 max-h-[90vh] overflow-y-auto">
         <!-- Título + botones azules -->
         <div class="flex items-center justify-between mb-4">
             <h3 class="text-xl font-semibold">Editar cliente</h3>
@@ -159,7 +158,7 @@
             <div class="flex gap-2">
                 <button
                     type="button"
-                    class="px-3 py-1.5 rounded-md text-xs bg-blue-600 hover:bg-blue-700 text-white"
+                    class="px-3 py-1.5 rounded-md text-xs bg-blue-600 hover:bg-blue-700 text-white text-gray-900"
                     on:click={() => (mostrarAgregarPedido = !mostrarAgregarPedido)}
                 >
                     {mostrarAgregarPedido ? '▼ Agregar pedido' : '▶ Agregar pedido'}
@@ -167,7 +166,7 @@
 
                 <button
                     type="button"
-                    class="px-3 py-1.5 rounded-md text-xs bg-blue-600 hover:bg-blue-700 text-white"
+                    class="px-3 py-1.5 rounded-md text-xs bg-blue-600 hover:bg-blue-700 text-white text-gray-900"
                     on:click={() => (mostrarHistorial = !mostrarHistorial)}
                 >
                     {mostrarHistorial ? '▼ Historial' : '▶ Historial'}
@@ -181,24 +180,24 @@
         <form on:submit|preventDefault={handleSave}>
             <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[350px] overflow-y-auto p-1">
 
-                <h3 class="text-base font-semibold text-white col-span-full border-b border-gray-700 pb-1 mb-1">
+                <h3 class="text-base font-semibold text-gray-900 col-span-full border-b border-gray-300 pb-1 mb-1">
                     Datos Generales:
                 </h3>
 
                 <div>
-                    <p class="text-sm text-gray-400">Nombre</p>
+                    <p class="text-sm text-gray-500">Nombre</p>
                     <input class={inputClass} required bind:value={data.nombre} />
                 </div>
                 <div>
-                    <p class="text-sm text-gray-400">Dirección</p>
+                    <p class="text-sm text-gray-500">Dirección</p>
                     <input class={inputClass} bind:value={data.direccion} />
                 </div>
                 <div>
-                    <p class="text-sm text-gray-400">Teléfono</p>
+                    <p class="text-sm text-gray-500">Teléfono</p>
                     <input class={inputClass} bind:value={data.telefono} />
                 </div>
                 <div>
-                    <p class="text-sm text-gray-400">Día de entrega</p>
+                    <p class="text-sm text-gray-500">Día de entrega</p>
                     <select class={inputClass} required bind:value={data.diaEntrega}>
                         <option value="" disabled>Seleccionar...</option>
                         <option>lunes</option><option>martes</option><option>miercoles</option>
@@ -206,45 +205,45 @@
                     </select>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-400">Estado</p>
+                    <p class="text-sm text-gray-500">Estado</p>
                     <select class={inputClass} bind:value={data.estado}>
                         <option>activo</option><option>pausado</option>
                     </select>
                 </div>
                 <div>
-                    <p class="text-sm text-gray-400">Orden</p>
+                    <p class="text-sm text-gray-500">Orden</p>
                     <input class={inputClass} type="number" bind:value={data.orden} />
                 </div>
 
                 <!-- STOCK -->
-                <h3 class="text-base font-semibold text-white col-span-full border-b border-gray-700 pb-1 mt-4 mb-1">
+                <h3 class="text-base font-semibold text-gray-900 col-span-full border-b border-gray-300 pb-1 mt-4 mb-1">
                     Stock:
                 </h3>
 
                 <div>
-                    <p class="text-sm text-gray-400">20 Litros</p>
+                    <p class="text-sm text-gray-500">20 Litros</p>
                     <input class={inputClass} type="number" bind:value={data.stock20} />
                 </div>
                 <div>
-                    <p class="text-sm text-gray-400">12 Litros</p>
+                    <p class="text-sm text-gray-500">12 Litros</p>
                     <input class={inputClass} type="number" bind:value={data.stock12} />
                 </div>
                 <div>
-                    <p class="text-sm text-gray-400">Sifones</p>
+                    <p class="text-sm text-gray-500">Sifones</p>
                     <input class={inputClass} type="number" bind:value={data.stockSif} />
                 </div>
                 <div>
-                    <p class="text-sm text-gray-400">Jugos / Amargos</p>
+                    <p class="text-sm text-gray-500">Jugos / Amargos</p>
                     <input class={inputClass} type="number" bind:value={data.stockDispenser} />
                 </div>
 
                 <div>
-                    <p class="text-sm text-gray-400 mb-2">¿Tiene Dispenser?</p>
+                    <p class="text-sm text-gray-500 mb-2">¿Tiene Dispenser?</p>
                     
                     <button 
                         title=""
                         type="button" 
-                        class="relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-0 {data.dispenser ? 'bg-green-500' : 'bg-gray-700'}"
+                        class="relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-0 {data.dispenser ? 'bg-green-500' : 'bg-gray-200'}"
                         on:click={() => data.dispenser = !data.dispenser}
                     >
                         <span 
@@ -252,13 +251,13 @@
                         ></span>
                     </button>
                     
-                    <span class="ml-2 text-sm {data.dispenser ? 'text-green-400' : 'text-gray-500'}">
+                    <span class="ml-2 text-sm {data.dispenser ? 'bg-green-500' : 'bg-gray-300'}">
                         {data.dispenser ? 'Si' : 'No'}
                     </span>
                 </div>
 
                 <div class="col-span-full mt-2">
-                    <p class="text-sm text-gray-400">Notas</p>
+                    <p class="text-sm text-gray-500">Notas</p>
                     <textarea class={inputClass} rows="2" bind:value={data.notas}></textarea>
                 </div>
             </div>
@@ -266,14 +265,14 @@
             <div class="w-full flex justify-center items-center gap-3 mt-4">
                 <button
                     type="button"
-                    class="px-4 py-2 rounded-md bg-gray-700 hover:bg-gray-600"
+                    class="px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300"
                     on:click={() => dispatch('cerrar')}
                 >
                     Cancelar
                 </button>
                 <button
                     type="submit"
-                    class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 disabled:opacity-60"
+                    class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-60"
                     disabled={guardando}
                 >
                     {guardando ? 'Guardando…' : 'Guardar cambios'}
@@ -285,37 +284,37 @@
             AGREGAR PEDIDO (DESPLEGABLE)
         ================================== -->
         {#if mostrarAgregarPedido}
-            <div class="mt-6 border-t border-gray-700 pt-4">
-                <h3 class="text-base font-semibold text-white mb-2">Agregar pedido</h3>
+            <div class="mt-6 border-t border-gray-300 pt-4">
+                <h3 class="text-base font-semibold text-gray-900 mb-2">Agregar pedido</h3>
 
                 <div class="grid grid-cols-2 gap-3 text-sm">
                     <div>
-                        <p class="text-xs text-gray-400">Sifones</p>
+                        <p class="text-xs text-gray-500">Sifones</p>
                         <input class={inputClass} type="number" bind:value={pedido.cantSif} />
                     </div>
 
                     <div>
-                        <p class="text-xs text-gray-400">20L</p>
+                        <p class="text-xs text-gray-500">20L</p>
                         <input class={inputClass} type="number" bind:value={pedido.cant20} />
                     </div>
 
                     <div>
-                        <p class="text-xs text-gray-400">12L</p>
+                        <p class="text-xs text-gray-500">12L</p>
                         <input class={inputClass} type="number" bind:value={pedido.cant12} />
                     </div>
 
                     <div>
-                        <p class="text-xs text-gray-400">Jugos/Amargos</p>
+                        <p class="text-xs text-gray-500">Jugos/Amargos</p>
                         <input class={inputClass} type="number" bind:value={pedido.cantDisp} />
                     </div>
 
                     <div>
-                        <p class="text-xs text-gray-400">Monto cobrado</p>
+                        <p class="text-xs text-gray-500">Monto cobrado</p>
                         <input class={inputClass} type="number" bind:value={pedido.cobrado} />
                     </div>
 
                     <div>
-                        <p class="text-xs text-gray-400">Medio de pago</p>
+                        <p class="text-xs text-gray-500">Medio de pago</p>
                         <select class={inputClass} bind:value={pedido.medioPago}>
                             <option value="efectivo">efectivo</option>
                             <option value="mercado_pago">mercado pago</option>
@@ -324,14 +323,14 @@
                     </div>
 
                     <div class="col-span-full">
-                        <p class="text-xs text-gray-400">Notas</p>
+                        <p class="text-xs text-gray-500">Notas</p>
                         <textarea class={inputClass} rows="2" bind:value={pedido.notasEntrega}></textarea>
                     </div>
                 </div>
 
-                <p class="text-sm text-gray-300 mt-2">
+                <p class="text-sm text-gray-700 mt-2">
                     Total: <b>${totalPedido}</b> • Cobrado: <b>${cobradoPedido}</b> •
-                    Pendiente: <b class="text-amber-300">${pendientePedido}</b>
+                    Pendiente: <b class="text-amber-500">${pendientePedido}</b>
                 </p>
 
                 <div class="flex justify-end mt-3">
@@ -350,21 +349,21 @@
             HISTORIAL DEL CLIENTE (DESPLEGABLE)
         ================================== -->
         {#if mostrarHistorial}
-            <div class="mt-6 border-t border-gray-700 pt-4">
+            <div class="mt-6 border-t border-gray-300 pt-4">
 
-                <h3 class="text-base font-semibold text-white mb-2">Historial de pedidos</h3>
+                <h3 class="text-base font-semibold text-gray-900 mb-2">Historial de pedidos</h3>
 
-                <p class="text-xs text-gray-300 mb-1">
+                <p class="text-xs text-gray-700 mb-1">
                     Total comprado: <b>${totalComprado}</b> •
                     Cobrado: <b>${totalCobrado}</b> •
                     Saldo:
-                    <span class={saldo > 0 ? "text-amber-300" : "text-emerald-300"}>
+                    <span class={saldo > 0 ? "text-amber-500" : "text-emerald-600"}>
                         ${saldo}
                     </span>
                     {#if saldo > 0}(debe){:else if saldo < 0}(a favor){/if}
                 </p>
 
-                <p class="text-xs text-gray-300 mb-1">
+                <p class="text-xs text-gray-700 mb-1">
                     Litros totales:
                     20L <b>{total20}</b> •
                     12L <b>{total12}</b> •
@@ -372,18 +371,18 @@
                     Jugos/Amargos <b>{totalDisp}</b>
                 </p>
 
-                <p class="text-xs text-gray-300 mb-1">
+                <p class="text-xs text-gray-700 mb-1">
                     Pedidos registrados: <b>{cantPedidos}</b> •
                     Ticket promedio: <b>${ticketPromedio.toFixed(0)}</b>
                 </p>
 
-                <p class="text-xs text-gray-300 mb-1">
+                <p class="text-xs text-gray-700 mb-1">
                     Total fiado historico:
-                    <b class="text-amber-300">${totalFiadoHistorico}</b>
+                    <b class="text-amber-500">${totalFiadoHistorico}</b>
                 </p>
 
                 {#if ultimoMovimiento}
-                    <p class="text-xs text-gray-300 mb-1">
+                    <p class="text-xs text-gray-700 mb-1">
                         Ultima compra:
                         <b>{fmt(ultimoMovimiento.fecha)}</b> •
                         Total: <b>${ultimoMovimiento.montoTotal}</b> •
@@ -391,7 +390,7 @@
                     </p>
                 {/if}
 
-                <p class="text-xs text-gray-400 mb-2">
+                <p class="text-xs text-gray-500 mb-2">
                     Medios de pago usados:
                     {#each Object.entries(pagosPorMedio) as [medio, cant]}
                         <span class="ml-2">{medio}: {cant}</span>
@@ -404,7 +403,7 @@
                     <div class="max-h-40 overflow-y-auto text-xs">
                         <table class="w-full border-collapse">
                             <thead>
-                                <tr class="border-b border-gray-700 text-gray-400">
+                                <tr class="border-b border-gray-300 text-gray-500">
                                     <th class="py-1 text-left">Fecha</th>
                                     <th class="py-1 text-right">Total</th>
                                     <th class="py-1 text-right">Cobrado</th>
@@ -416,8 +415,8 @@
                                     <tr class="border-b border-gray-800">
                                         <td class="py-1">{fmt(m.fecha)}</td>
                                         <td class="py-1 text-right">${m.montoTotal}</td>
-                                        <td class="py-1 text-right text-emerald-300">${m.montoCobrado}</td>
-                                        <td class="py-1 text-right text-amber-300">
+                                        <td class="py-1 text-right text-emerald-600">${m.montoCobrado}</td>
+                                        <td class="py-1 text-right text-amber-500">
                                             {(m.montoTotal || 0) - (m.montoCobrado || 0)}
                                         </td>
                                     </tr>

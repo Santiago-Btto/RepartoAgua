@@ -482,8 +482,8 @@
 
 <div>
     <!-- HEADER -->
-    <header class="sticky top-0 z-10 flex items-center justify-between bg-[#0f172a] p-4 border-b border-gray-700">
-        <h1 class="text-lg font-semibold">Reparto de Agua 🚍</h1>
+    <header class="sticky top-0 z-10 flex items-center justify-between bg-white p-4 border-b border-gray-300 shadow-sm">
+        <h1 class="text-lg font-semibold text-gray-900">Reparto de Agua 🚍</h1>
 
         <div class="flex items-center gap-3">
             <div class="flex items-center gap-1 text-xs md:text-sm">
@@ -491,7 +491,7 @@
                     class="px-2 py-1 rounded-md border
                         {vista === 'clientes'
                             ? 'bg-blue-600 border-blue-500 text-white'
-                            : 'bg-transparent border-gray-600 text-gray-300 hover:bg-gray-800'}"
+                            : 'bg-transparent border-gray-600 text-gray-700 hover:bg-white shadow-sm'}"
                     on:click={() => vista = 'clientes'}
                 >
                     📋 Clientes
@@ -500,14 +500,14 @@
                     class="px-2 py-1 rounded-md border
                         {vista === 'estadisticas'
                             ? 'bg-blue-600 border-blue-500 text-white'
-                            : 'bg-transparent border-gray-600 text-gray-300 hover:bg-gray-800'}"
+                            : 'bg-transparent border-gray-600 text-gray-700 hover:bg-white shadow-sm'}"
                     on:click={() => vista = 'estadisticas'}
                 >
                     📊 Estadísticas
                 </button>
             </div>
 
-            <button class="text-sm text-gray-400 hover:text-white" on:click={handleRefresh}>
+            <button class="text-sm text-gray-500 hover:text-gray-900" on:click={handleRefresh}>
                 🔁 Actualizar
             </button>
             <small class="text-gray-500">{syncMsg}</small>
@@ -530,12 +530,12 @@
             />
 
             <!-- PRECIOS BASE -->
-            <section class="bg-[#111828] border border-gray-700 rounded-lg p-3 text-sm">
+            <section class="bg-white border border-gray-300 rounded-lg p-3 text-sm">
                 <div class="flex items-center justify-between mb-2">
-                    <span class="font-semibold text-gray-200">Precios actuales</span>
+                    <span class="font-semibold text-gray-800">Precios actuales</span>
                     <button
                         type="button"
-                        class="px-3 py-1 rounded-md text-xs bg-gray-700 hover:bg-gray-600"
+                        class="px-3 py-1 rounded-md text-xs bg-gray-200 hover:bg-gray-300"
                         on:click={guardarPrecios}
                     >
                         💾 Guardar precios
@@ -543,37 +543,37 @@
                 </div>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
                     <div class="flex flex-col gap-1">
-                        <p class="text-xs text-gray-400">20L</p>
+                        <p class="text-xs text-gray-500">20L</p>
                         <input
                             type="number"
-                            class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-xs text-gray-100"
+                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-xs text-gray-100"
                             bind:value={preciosBase.precio20}
                             min="0"
                         />
                     </div>
                     <div class="flex flex-col gap-1">
-                        <p class="text-xs text-gray-400">12L</p>
+                        <p class="text-xs text-gray-500">12L</p>
                         <input
                             type="number"
-                            class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-xs text-gray-100"
+                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-xs text-gray-100"
                             bind:value={preciosBase.precio12}
                             min="0"
                         />
                     </div>
                     <div class="flex flex-col gap-1">
-                        <p class="text-xs text-gray-400">Sifón</p>
+                        <p class="text-xs text-gray-500">Sifón</p>
                         <input
                             type="number"
-                            class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-xs text-gray-100"
+                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-xs text-gray-100"
                             bind:value={preciosBase.precioSif}
                             min="0"
                         />
                     </div>
                     <div class="flex flex-col gap-1">
-                        <p class="text-xs text-gray-400">Jugos o Amargos</p>
+                        <p class="text-xs text-gray-500">Jugos o Amargos</p>
                         <input
                             type="number"
-                            class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-xs text-gray-100"
+                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-xs text-gray-100"
                             bind:value={preciosBase.precioDisp}
                             min="0"
                         />
@@ -583,14 +583,14 @@
 
             <div class="flex items-center justify-end max-w-5xl mx-auto px-4 -mt-2">
                 <button
-                    class="px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
+                    class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
                     on:click={abrirEmpezarDia}
                     disabled={filtroDia === 'todos'}>
                     ▶ Empezar día {filtroDia !== 'todos' ? `(${filtroDia})` : ''}
                 </button>
             </div>
 
-            <section class="bg-[#111828] border border-gray-700 rounded-lg p-4">
+            <section class="bg-white border border-gray-300 rounded-lg p-4">
                 <ListaClientes
                     grupos={gruposRender}
                     on:editar={handleEditarCliente}
@@ -602,7 +602,7 @@
 
         {#if clientesEliminadosBase.length}
             <div class="max-w-5xl mx-auto px-4 pb-6">
-                <section class="bg-[#111828] border border-red-800/60 rounded-lg mt-4 overflow-hidden">
+                <section class="bg-white border border-red-700/60 rounded-lg mt-4 overflow-hidden">
                     <!-- "Acordeon" -->
                     <button
                         type="button"
@@ -610,30 +610,30 @@
                         on:click={() => (mostrarEliminados = !mostrarEliminados)}
                     >
                         <div class="flex items-center gap-2">
-                            <h2 class="font-semibold text-red-300">
+                            <h2 class="font-semibold text-red-500">
                                 Clientes eliminados
                             </h2>
-                            <span class="text-xs px-2 py-0.5 rounded-full bg-red-900 text-red-100">
+                            <span class="text-xs px-2 py-0.5 rounded-full bg-red-800 text-white">
                                 {clientesEliminadosBase.length}
                             </span>
                         </div>
-                        <span class="text-gray-400 text-lg">
+                        <span class="text-gray-500 text-lg">
                             {mostrarEliminados ? '▾' : '▸'}
                         </span>
                     </button>
 
                     {#if mostrarEliminados}
-                        <div class="border-t border-red-800/60 p-4 max-h-80 overflow-y-auto">
+                        <div class="border-t border-red-700/60 p-4 max-h-80 overflow-y-auto">
                             <!-- Filtros por motivo -->
                             <div class="flex flex-wrap items-center gap-2 mb-3 text-xs">
-                                <span class="text-gray-300 mr-1">Motivo:</span>
+                                <span class="text-gray-700 mr-1">Motivo:</span>
 
                                 <button
                                     type="button"
                                     class="px-2 py-1 rounded-full border
                                         {filtroMotivoElim === 'todos'
                                             ? 'bg-red-700 text-white border-red-500'
-                                            : 'bg-transparent text-red-200 border-red-700 hover:bg-red-900/40'}"
+                                            : 'bg-transparent text-gray-800 border-red-700 hover:bg-red-800/20'}"
                                     on:click={() => filtroMotivoElim = 'todos'}
                                 >
                                     Todos ({clientesEliminadosBase.length})
@@ -643,8 +643,8 @@
                                     type="button"
                                     class="px-2 py-1 rounded-full border
                                         {filtroMotivoElim === 'mala_atencion'
-                                            ? 'bg-red-700 text-white border-red-500'
-                                            : 'bg-transparent text-red-200 border-red-700 hover:bg-red-900/40'}"
+                                            ? 'bg-red-700 text-gray-900 border-red-500'
+                                            : 'bg-transparent text-gray-800 border-red-700 hover:bg-red-800/20'}"
                                     on:click={() => filtroMotivoElim = 'mala_atencion'}
                                 >
                                     Mala atención ({conteosMotivo.mala_atencion})
@@ -654,8 +654,8 @@
                                     type="button"
                                     class="px-2 py-1 rounded-full border
                                         {filtroMotivoElim === 'mala_calidad'
-                                            ? 'bg-red-700 text-white border-red-500'
-                                            : 'bg-transparent text-red-200 border-red-700 hover:bg-red-900/40'}"
+                                            ? 'bg-red-700 text-gray-900 border-red-500'
+                                            : 'bg-transparent text-gray-800 border-red-700 hover:bg-red-800/20'}"
                                     on:click={() => filtroMotivoElim = 'mala_calidad'}
                                 >
                                     Mala calidad ({conteosMotivo.mala_calidad})
@@ -665,8 +665,8 @@
                                     type="button"
                                     class="px-2 py-1 rounded-full border
                                         {filtroMotivoElim === 'costo_elevado'
-                                            ? 'bg-red-700 text-white border-red-500'
-                                            : 'bg-transparent text-red-200 border-red-700 hover:bg-red-900/40'}"
+                                            ? 'bg-red-700 text-gray-900 border-red-500'
+                                            : 'bg-transparent text-gray-800 border-red-700 hover:bg-red-800/20'}"
                                     on:click={() => filtroMotivoElim = 'costo_elevado'}
                                 >
                                     Costo elevado ({conteosMotivo.costo_elevado})
@@ -676,8 +676,8 @@
                                     type="button"
                                     class="px-2 py-1 rounded-full border
                                         {filtroMotivoElim === 'competencia'
-                                            ? 'bg-red-700 text-white border-red-500'
-                                            : 'bg-transparent text-red-200 border-red-700 hover:bg-red-900/40'}"
+                                            ? 'bg-red-700 text-gray-900 border-red-500'
+                                            : 'bg-transparent text-gray-800 border-red-700 hover:bg-red-800/20'}"
                                     on:click={() => filtroMotivoElim = 'competencia'}
                                 >
                                     Competencia ({conteosMotivo.competencia})
@@ -686,15 +686,15 @@
 
                             <ul class="space-y-2">
                                 {#each clientesEliminados as c (c.id)}
-                                    <li class="bg-[#0c1124] border border-gray-700 rounded-lg p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                                    <li class="bg-gray-50 border border-gray-300 rounded-lg p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                                         <div>
                                             <div class="flex items-center gap-2">
                                                 <span class="font-semibold">{c.nombre}</span>
-                                                <span class="px-2 py-0.5 text-xs rounded-full bg-red-800 text-red-100">
+                                                <span class="px-2 py-0.5 text-xs rounded-full bg-red-800 text-white">
                                                     eliminado
                                                 </span>
                                             </div>
-                                            <p class="text-xs text-gray-400">
+                                            <p class="text-xs text-gray-500">
                                                 {#if c.diaEntrega}Día: {c.diaEntrega} • {/if}
                                                 Orden anterior: {c.orden ?? '-'}
                                             </p>
@@ -746,7 +746,7 @@
 
 
     {#if toastMsg}
-        <div class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded">
+        <div class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-black/70 text-gray-900 px-4 py-2 rounded">
             {toastMsg}
         </div>
     {/if}

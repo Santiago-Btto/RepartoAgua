@@ -222,7 +222,7 @@
 <div class="fixed inset-0 z-50 flex items-center justify-center">
     <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" on:click={cerrar}></div>
 
-    <div class="relative w-full max-w-3xl bg-[#0c1124] border border-gray-700 rounded-xl shadow-xl p-6 max-h-[92vh] overflow-hidden">
+    <div class="relative w-full max-w-3xl bg-gray-50 border border-gray-300 rounded-xl shadow-xl p-6 max-h-[92vh] overflow-hidden">
         <!-- Header -->
         <div class="flex items-center justify-between mb-4">
             <div class="flex items-center gap-3">
@@ -235,7 +235,7 @@
                     </h2>
                 {/if}
             </div>
-            <button class="text-gray-400 hover:text-white" on:click={cerrar} aria-label="Cerrar">✕</button>
+            <button class="text-gray-500 hover:text-gray-900" on:click={cerrar} aria-label="Cerrar">✕</button>
         </div>
 
         {#if clienteActual}
@@ -248,18 +248,18 @@
                     </span>
                 </div>
 
-                <div class="text-sm text-gray-300">
+                <div class="text-sm text-gray-700">
                     {#if clienteActual.direccion}{clienteActual.direccion}{/if}
                     {#if clienteActual.telefono} - {clienteActual.telefono}{/if}
                 </div>
 
                 <!-- STOCK + AGREGAR CLIENTE -->
                 <div class="flex items-center justify-between text-sm">
-                    <span class="text-gray-400">{mostrarStock(clienteActual)}</span>
+                    <span class="text-gray-500">{mostrarStock(clienteActual)}</span>
 
                     <button
                         type="button"
-                        class="px-3 py-1.5 rounded-md text-xs bg-blue-600 hover:bg-blue-700 text-white"
+                        class="px-3 py-1.5 rounded-md text-xs bg-blue-600 hover:bg-blue-700 text-white text-gray-900"
                         on:click={agregarClienteDesdeRuta}
                     >
                         ➕ Agregar cliente
@@ -271,14 +271,14 @@
                 </div>
 
                 <!-- EDITAR DATOS DEL CLIENTE (ACORDEON) -->
-                <div class="mt-3 border-t border-gray-700 pt-2">
+                <div class="mt-3 border-t border-gray-300 pt-2">
                     <button
                         type="button"
-                        class="w-full flex items-center justify-between text-sm text-gray-200 py-1"
+                        class="w-full flex items-center justify-between text-sm text-gray-800 py-1"
                         on:click={() => (mostrarEditarCliente = !mostrarEditarCliente)}
                     >
                         <span>Editar datos del cliente (stock / notas)</span>
-                        <span class="text-gray-400 text-lg">
+                        <span class="text-gray-500 text-lg">
                             {mostrarEditarCliente ? '▾' : '▸'}
                         </span>
                     </button>
@@ -286,50 +286,50 @@
                     {#if mostrarEditarCliente}
                         <div class="mt-2 grid grid-cols-2 gap-3">
                             <div class="flex flex-col gap-1">
-                                <label class="text-xs text-gray-400">Stock 20L</label>
+                                <label class="text-xs text-gray-500">Stock 20L</label>
                                 <input
                                     type="number"
-                                    class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-sm text-gray-100"
+                                    class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-100"
                                     bind:value={editable.stock20}
                                     min="0"
                                 />
                             </div>
 
                             <div class="flex flex-col gap-1">
-                                <label class="text-xs text-gray-400">Stock 12L</label>
+                                <label class="text-xs text-gray-500">Stock 12L</label>
                                 <input
                                     type="number"
-                                    class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-sm text-gray-100"
+                                    class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-100"
                                     bind:value={editable.stock12}
                                     min="0"
                                 />
                             </div>
 
                             <div class="flex flex-col gap-1">
-                                <label class="text-xs text-gray-400">Sifones</label>
+                                <label class="text-xs text-gray-500">Sifones</label>
                                 <input
                                     type="number"
-                                    class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-sm text-gray-100"
+                                    class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-100"
                                     bind:value={editable.stockSif}
                                     min="0"
                                 />
                             </div>
 
                             <div class="flex flex-col gap-1">
-                                <label class="text-xs text-gray-400">Jugos / Amargos</label>
+                                <label class="text-xs text-gray-500">Jugos / Amargos</label>
                                 <input
                                     type="number"
-                                    class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-sm text-gray-100"
+                                    class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-100"
                                     bind:value={editable.stockDispenser}
                                     min="0"
                                 />
                             </div>
 
                             <div class="col-span-2 flex flex-col gap-1">
-                                <label class="text-xs text-gray-400">Notas del cliente</label>
+                                <label class="text-xs text-gray-500">Notas del cliente</label>
                                 <textarea
                                     rows="2"
-                                    class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-sm text-gray-100"
+                                    class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-100"
                                     bind:value={editable.notas}
                                 ></textarea>
                             </div>
@@ -337,14 +337,14 @@
                             <div class="col-span-2 flex justify-end gap-2 mt-2">
                                 <button
                                     type="button"
-                                    class="px-3 py-1.5 rounded-md text-sm bg-gray-700 hover:bg-gray-600"
+                                    class="px-3 py-1.5 rounded-md text-sm bg-gray-200 hover:bg-gray-300"
                                     on:click={() => guardar(false)}
                                 >
                                     💾 Guardar cambios cliente
                                 </button>
                                 <button
                                     type="button"
-                                    class="px-3 py-1.5 rounded-md text-sm bg-blue-600 hover:bg-blue-700"
+                                    class="px-3 py-1.5 rounded-md text-sm bg-blue-600 hover:bg-blue-700 text-white"
                                     on:click={() => guardar(true)}
                                 >
                                     {esUltimo ? 'Guardar y finalizar ✅' : 'Guardar y siguiente ▶'}
@@ -355,12 +355,12 @@
                 </div>
 
                 <!-- ENTREGA DEL DIA -->
-                <div class="mt-4 border-t border-gray-700 pt-3 grid grid-cols-2 gap-3">
+                <div class="mt-4 border-t border-gray-300 pt-3 grid grid-cols-2 gap-3">
                     <div class="col-span-2 flex items-center justify-between">
-                        <span class="text-gray-300 text-sm font-semibold">
+                        <span class="text-gray-700 text-sm font-semibold">
                             Entrega del día
                         </span>
-                        <span class="text-xs text-emerald-300">
+                        <span class="text-xs text-emerald-600">
                             Recaudado en este recorrido: ${recaudadoRecorrido}
                         </span>
                     </div>
@@ -372,59 +372,59 @@
 
                     <!-- Cantidades en el orden pedido -->
                     <div class="flex flex-col gap-1">
-                        <label class="text-xs text-gray-400">Cant. Sifones</label>
+                        <label class="text-xs text-gray-500">Cant. Sifones</label>
                         <input
                             type="number"
-                            class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-sm text-gray-100"
+                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-100"
                             bind:value={entrega.cantSif}
                             min="0"
                         />
                     </div>
 
                     <div class="flex flex-col gap-1">
-                        <label class="text-xs text-gray-400">Cant. 20L</label>
+                        <label class="text-xs text-gray-500">Cant. 20L</label>
                         <input
                             type="number"
-                            class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-sm text-gray-100"
+                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-100"
                             bind:value={entrega.cant20}
                             min="0"
                         />
                     </div>
 
                     <div class="flex flex-col gap-1">
-                        <label class="text-xs text-gray-400">Cant. 12L</label>
+                        <label class="text-xs text-gray-500">Cant. 12L</label>
                         <input
                             type="number"
-                            class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-sm text-gray-100"
+                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-100"
                             bind:value={entrega.cant12}
                             min="0"
                         />
                     </div>
 
                     <div class="flex flex-col gap-1">
-                        <label class="text-xs text-gray-400">Cant. Jugos / Amargos</label>
+                        <label class="text-xs text-gray-500">Cant. Jugos / Amargos</label>
                         <input
                             type="number"
-                            class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-sm text-gray-100"
+                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-100"
                             bind:value={entrega.cantDisp}
                             min="0"
                         />
                     </div>
 
                     <div class="flex flex-col gap-1">
-                        <label class="text-xs text-gray-400">Monto cobrado</label>
+                        <label class="text-xs text-gray-500">Monto cobrado</label>
                         <input
                             type="number"
-                            class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-sm text-gray-100"
+                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-100"
                             bind:value={entrega.cobrado}
                             min="0"
                         />
                     </div>
 
                     <div class="flex flex-col gap-1">
-                        <label class="text-xs text-gray-400">Medio de pago</label>
+                        <label class="text-xs text-gray-500">Medio de pago</label>
                         <select
-                            class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-sm text-gray-100"
+                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-100"
                             bind:value={entrega.medioPago}
                         >
                             <option value="efectivo">efectivo</option>
@@ -433,17 +433,17 @@
                         </select>
                     </div>
 
-                    <div class="col-span-2 text-sm text-gray-300 mt-1">
+                    <div class="col-span-2 text-sm text-gray-700 mt-1">
                         Total entrega: <span class="font-semibold">${totalEntrega}</span> •
                         Cobrado: <span class="font-semibold">${cobradoNum}</span> •
-                        Pendiente: <span class="font-semibold text-amber-300">${pendiente}</span>
+                        Pendiente: <span class="font-semibold text-amber-500">${pendiente}</span>
                     </div>
 
                     <div class="col-span-2 flex flex-col gap-1">
-                        <label class="text-xs text-gray-400">Notas de la entrega</label>
+                        <label class="text-xs text-gray-500">Notas de la entrega</label>
                         <textarea
                             rows="2"
-                            class="bg-[#0b1020] border border-gray-700 rounded-md px-2 py-1 text-sm text-gray-100"
+                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-100"
                             bind:value={entrega.notasEntrega}
                         ></textarea>
                     </div>
@@ -458,7 +458,7 @@
                         </button>
                         <button
                             type="button"
-                            class="px-3 py-1.5 rounded-md text-sm bg-blue-600 hover:bg-blue-700"
+                            class="px-3 py-1.5 rounded-md text-sm bg-blue-600 hover:bg-blue-700 text-white"
                             on:click={() => registrarEntrega(true)}
                         >
                             {esUltimo ? 'Registrar y finalizar ✅' : 'Registrar y siguiente ▶'}
@@ -470,7 +470,7 @@
             <!-- Navegacion simple -->
             <div class="mt-4 flex items-center justify-between">
                 <button
-                    class="px-4 py-2 rounded-md bg-gray-700 hover:bg-gray-600 disabled:opacity-50"
+                    class="px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
                     on:click={anterior}
                     disabled={index === 0}
                 >
@@ -478,14 +478,14 @@
                 </button>
 
                 <button
-                    class="px-4 py-2 rounded-md bg-gray-700 hover:bg-gray-600"
+                    class="px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300"
                     on:click={siguiente}
                 >
                     {esUltimo ? 'Finalizar' : 'Siguiente ▶'}
                 </button>
             </div>
         {:else}
-            <div class="text-center text-gray-400">No hay clientes para mostrar.</div>
+            <div class="text-center text-gray-500">No hay clientes para mostrar.</div>
         {/if}
     </div>
 </div>

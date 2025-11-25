@@ -5,9 +5,9 @@
 
 @layer base {
   body {
-    @apply text-white; 
+    @apply text-gray-900; 
     /* Aquí también puedes poner el fondo oscuro 
        que tenías en +page.svelte si quieres */
-    @apply bg-gray-900; 
+    @apply bg-gray-50; 
   }
 }

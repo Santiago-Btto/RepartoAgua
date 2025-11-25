@@ -6,11 +6,11 @@
     export let dia = 'todos';
     export let estado = 'todos';
     export let total = 0;
-    const inputClass = "w-full bg-[#0c1222] border border-gray-700 rounded-md p-2 text-gray-200 focus:ring-blue-500 focus:border-blue-500";
+    const inputClass = "w-full bg-white border border-gray-300 rounded-md p-2 text-gray-800 focus:ring-blue-500 focus:border-blue-500";
 </script>
 
 <h2 class="text-lg font-semibold">
-    Clientes guardados <span class="text-gray-400">(total: {total})</span>
+    Clientes guardados <span class="text-gray-500">(total: {total})</span>
 </h2>
 <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
     <input class="{inputClass} md:col-span-3" placeholder="Buscar..." bind:value={term} />
@@ -23,7 +23,7 @@
         <option value="todos">Todos</option>
         <option>activo</option><option>pausado</option>
     </select>
-    <button class="w-full p-2 bg-blue-600 hover:bg-blue-700 rounded-md font-semibold" on:click={() => dispatch('crear')}>
+    <button class="w-full p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md font-semibold" on:click={() => dispatch('crear')}>
         Crear cliente
     </button>
 </div>
