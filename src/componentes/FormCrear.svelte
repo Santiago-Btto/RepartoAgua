@@ -17,7 +17,8 @@
         stockSif: '',
         stockDispenser: '',
         orden: '',
-        notas: ''
+        notas: '',
+        dispenser: false
     };
 
     $: if (diaInicial && data.diaEntrega !== diaInicial) {
@@ -39,7 +40,8 @@
             stockSif: Number(src.stockSif) || 0,
             stockDispenser: Number(src.stockDispenser) || 0,
             orden: Number(src.orden),
-            notas: (src.notas || '').trim()
+            notas: (src.notas || '').trim(),
+            dispenser: src.dispenser
         };
     }
 
@@ -118,6 +120,24 @@
                 <div>
                     <p class="text-sm text-gray-400">Dispenser</p>
                     <input class={inputClass} type="number" min="0" placeholder="0" bind:value={data.stockDispenser} />
+                </div>
+                <div>
+                    <p class="text-sm text-gray-400 mb-2">¿Tiene Dispenser?</p>
+                    
+                    <button 
+                        title=""
+                        type="button" 
+                        class="relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-200 focus:outline-none focus:ring-0 {data.dispenser ? 'bg-green-500' : 'bg-gray-700'}"
+                        on:click={() => data.dispenser = !data.dispenser}
+                    >
+                        <span 
+                            class="inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform duration-200 {data.dispenser ? 'translate-x-6' : 'translate-x-1'}"
+                        ></span>
+                    </button>
+                    
+                    <span class="ml-2 text-sm {data.dispenser ? 'text-green-400' : 'text-gray-500'}">
+                        {data.dispenser ? 'Si' : 'No'}
+                    </span>
                 </div>
                 <div class="col-span-full mt-2">
                     <p class="text-sm text-gray-400">Notas</p>
