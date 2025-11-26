@@ -298,6 +298,7 @@
             alert('No se pudo registrar la entrega.');
         }
     }
+    
      // -------- REGISTRAR GASTOS DEL RECORRIDO--------
     async function handleRegistrarGastoRecorrido(e) {
         const data = e.detail;
@@ -573,7 +574,7 @@
                         <p class="text-xs text-gray-500">20L</p>
                         <input
                             type="number"
-                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-xs text-gray-100"
+                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-xs text-gray-900"
                             bind:value={preciosBase.precio20}
                             min="0"
                         />
@@ -582,7 +583,7 @@
                         <p class="text-xs text-gray-500">12L</p>
                         <input
                             type="number"
-                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-xs text-gray-100"
+                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-xs text-gray-900"
                             bind:value={preciosBase.precio12}
                             min="0"
                         />
@@ -591,7 +592,7 @@
                         <p class="text-xs text-gray-500">Sifón</p>
                         <input
                             type="number"
-                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-xs text-gray-100"
+                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-xs text-gray-900"
                             bind:value={preciosBase.precioSif}
                             min="0"
                         />
@@ -600,7 +601,7 @@
                         <p class="text-xs text-gray-500">Jugos o Amargos</p>
                         <input
                             type="number"
-                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-xs text-gray-100"
+                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-xs text-gray-900"
                             bind:value={preciosBase.precioDisp}
                             min="0"
                         />

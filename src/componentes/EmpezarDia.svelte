@@ -461,7 +461,7 @@
                         <label class="text-xs text-gray-500">Cant. Sifones</label>
                         <input
                             type="number"
-                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-100"
+                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-900"
                             bind:value={entrega.cantSif}
                             min="0"
                         />
@@ -471,7 +471,7 @@
                         <label class="text-xs text-gray-500">Cant. 20L</label>
                         <input
                             type="number"
-                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-100"
+                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-900"
                             bind:value={entrega.cant20}
                             min="0"
                         />
@@ -481,7 +481,7 @@
                         <label class="text-xs text-gray-500">Cant. 12L</label>
                         <input
                             type="number"
-                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-100"
+                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-900"
                             bind:value={entrega.cant12}
                             min="0"
                         />
@@ -491,7 +491,7 @@
                         <label class="text-xs text-gray-500">Cant. Jugos / Amargos</label>
                         <input
                             type="number"
-                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-100"
+                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-900"
                             bind:value={entrega.cantDisp}
                             min="0"
                         />
@@ -501,7 +501,7 @@
                         <label class="text-xs text-gray-500">Monto cobrado</label>
                         <input
                             type="number"
-                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-100"
+                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-900"
                             bind:value={entrega.cobrado}
                             min="0"
                         />
@@ -510,7 +510,7 @@
                     <div class="flex flex-col gap-1">
                         <label class="text-xs text-gray-500">Medio de pago</label>
                         <select
-                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-100"
+                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-900"
                             bind:value={entrega.medioPago}
                         >
                             <option value="efectivo">efectivo</option>
@@ -529,7 +529,7 @@
                         <label class="text-xs text-gray-500">Notas de la entrega</label>
                         <textarea
                             rows="2"
-                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-100"
+                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-900"
                             bind:value={entrega.notasEntrega}
                         ></textarea>
                     </div>
@@ -537,14 +537,14 @@
                     <div class="col-span-2 flex justify-end gap-2 mt-2">
                         <button
                             type="button"
-                            class="px-3 py-1.5 rounded-md text-sm bg-emerald-600 hover:bg-emerald-700"
+                            class="px-3 py-1.5 rounded-md text-sm bg-emerald-300 hover:bg-emerald-700"
                             on:click={() => registrarEntrega(false)}
                         >
                             💾 Registrar entrega
                         </button>
                         <button
                             type="button"
-                            class="px-3 py-1.5 rounded-md text-sm bg-blue-600 hover:bg-blue-700 text-white"
+                            class="px-3 py-1.5 rounded-md text-sm bg-blue-500 hover:bg-blue-700 text-white"
                             on:click={() => registrarEntrega(true)}
                         >
                             {esUltimo ? 'Registrar y finalizar ✅' : 'Registrar y siguiente ▶'}
