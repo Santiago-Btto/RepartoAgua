@@ -780,15 +780,16 @@
     {/if}
 </div>
 
-    {#if mostrarEmpezar}
+{#if mostrarEmpezar}
     <EmpezarDia
         clientes={clientesDelDia}
         preciosBase={preciosBase}
+        startIndex={indiceRutaActual}
         on:cerrar={() => (mostrarEmpezar = false)}
         on:guardar={handleGuardarEdicion}
         on:registrarEntrega={handleRegistrarEntrega}
-        on:registrarGastoRecorrido={handleRegistrarGastoRecorrido}
         on:agregarCliente={handleAgregarClienteDesdeRuta}
-        />
-    {/if}
+        on:editar={handleEditarCliente}
+    />
+{/if}
 

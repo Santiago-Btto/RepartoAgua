@@ -147,7 +147,7 @@
     }, {});
 </script>
 
-<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+<div class="fixed inset-0 z-60 flex items-center justify-center p-4">
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" on:click={() => dispatch('cerrar')}></div>
 
     <div class="relative w-full max-w-3xl bg-white border border-gray-300 rounded-lg shadow-lg p-6 max-h-[90vh] overflow-y-auto">

@@ -234,6 +234,12 @@
         });
     }
 
+    function editarClienteActual() {
+        if (!clienteActual) return;
+        dispatch('editar', clienteActual);
+    }
+
+
 
     // navegacion con teclado
     function onKey(e) {
@@ -292,14 +298,25 @@
                 <div class="flex items-center justify-between text-sm">
                     <span class="text-gray-500">{mostrarStock(clienteActual)}</span>
 
-                    <button
-                        type="button"
-                        class="px-3 py-1.5 rounded-md text-xs bg-blue-600 hover:bg-blue-700 text-white text-gray-900"
-                        on:click={agregarClienteDesdeRuta}
-                    >
-                        ➕ Agregar cliente
-                    </button>
+                    <div class="flex gap-2">
+                        <button
+                            type="button"
+                            class="px-3 py-1.5 rounded-md text-xs bg-gray-200 hover:bg-gray-300 text-gray-900"
+                            on:click={editarClienteActual}
+                        >
+                            ✏️ Editar
+                        </button>
+
+                        <button
+                            type="button"
+                            class="px-3 py-1.5 rounded-md text-xs bg-blue-600 hover:bg-blue-700 text-white text-gray-900"
+                            on:click={agregarClienteDesdeRuta}
+                        >
+                            ➕ Agregar cliente
+                        </button>
+                    </div>
                 </div>
+
 
                 <div class="text-xs text-gray-500">
                     Últ. mod: {fmt(clienteActual.lastModified)}
