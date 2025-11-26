@@ -10,6 +10,7 @@
 
     let entregas = [];
     let syncMsg = '';
+    let gastos = [];
 
     // filtros realmente aplicados
     let filtroDiaRuta = 'todos';   // lunes, martes... o todos
@@ -26,20 +27,34 @@
 
     // ---- carga en vivo de entregas ----
     onMount(() => {
-        const q = query(
+        const qEnt = query(
             collection(db, 'entregas'),
             orderBy('fecha', 'desc')
         );
 
         syncMsg = 'Cargando entregas...';
-        const unsubscribe = onSnapshot(q, (snap) => {
+        const unsubEnt = onSnapshot(qEnt, (snap) => {
             entregas = snap.docs.map(d => ({ id: d.id, ...d.data() }));
             syncMsg = `Total entregas cargadas: ${entregas.length}`;
             recalcToken++;
         });
 
-        return unsubscribe;
+        const qGas = query(
+            collection(db, 'gastosRecorrido'),
+            orderBy('fecha', 'desc')
+        );
+
+        const unsubGas = onSnapshot(qGas, (snap) => {
+            gastos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+            recalcToken++;
+        });
+
+        return () => {
+            unsubEnt();
+            unsubGas();
+        };
     });
+
 
     function toJsDate(ts) {
         if (!ts) return null;
@@ -145,6 +160,21 @@
         (acc, e) => acc + (Number(e.entregadoDisp) || 0),
         0
     );
+
+    $: gastosFiltrados = (recalcToken, gastos).filter(g => {
+        if (filtroDiaRuta !== 'todos' && g.diaRuta !== filtroDiaRuta) return false;
+        if (!estaEnPeriodo(g)) return false;
+    return true;
+    });
+
+    $: totalGastos = gastosFiltrados.reduce(
+        (acc, g) => acc + (Number(g.montoGasto) || 0),
+        0
+    );
+
+    $: saldoNeto = totalCobrado - totalGastos;
+
+
     $: conteoMedios = entregasFiltradas.reduce((acc, e) => {
         const medio = e.medioPago || 'sin_dato';
         acc[medio] = (acc[medio] || 0) + 1;
@@ -222,20 +252,25 @@
     </header>
 
     <!-- Cards de resumen -->
-    <section class="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div class="bg-white border border-gray-300 rounded-lg p-3">
-            <p class="text-xs text-gray-500">Ventas (monto total)</p>
-            <p class="text-2xl font-semibold mt-1">${totalVentas}</p>
-        </div>
-        <div class="bg-white border border-gray-300 rounded-lg p-3">
-            <p class="text-xs text-gray-500">Cobrado</p>
-            <p class="text-2xl font-semibold mt-1 text-emerald-600">${totalCobrado}</p>
-        </div>
-        <div class="bg-white border border-gray-300 rounded-lg p-3">
-            <p class="text-xs text-gray-500">Pendiente de cobro</p>
-            <p class="text-2xl font-semibold mt-1 text-amber-500">${totalPendiente}</p>
-        </div>
-    </section>
+    <section class="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <div class="bg-[#111828] border border-gray-700 rounded-lg p-3">
+            <p class="text-xs text-gray-400">Ventas (monto total)</p>
+            <p class="text-2xl font-semibold mt-1 text-green-500">${totalVentas}</p>
+    </div>
+        <div class="bg-[#111828] border border-gray-700 rounded-lg p-3">
+            <p class="text-xs text-gray-400">Cobrado</p>
+            <p class="text-2xl font-semibold mt-1 text-emerald-300">${totalCobrado}</p>
+    </div>
+        <div class="bg-[#111828] border border-gray-700 rounded-lg p-3">
+            <p class="text-xs text-gray-400">Gastos del recorrido</p>
+            <p class="text-2xl font-semibold mt-1 text-red-300">${totalGastos}</p>
+    </div>
+        <div class="bg-[#111828] border border-gray-700 rounded-lg p-3">
+            <p class="text-xs text-gray-400">Saldo neto (cobrado - gastos)</p>
+            <p class="text-2xl font-semibold mt-1 text-sky-300">${saldoNeto}</p>
+    </div>
+</section>
+
 
     <!-- Totales de unidades -->
     <section class="bg-white border border-gray-300 rounded-lg p-3">

@@ -30,6 +30,9 @@
     };
 
     let recaudadoRecorrido = 0; // acumulado de lo cobrado en este recorrido (solo UI)
+    let gastoMonto = '';   // gasto total del recorrido
+    let gastoNotas = '';   // descripcion breve del gasto
+
 
     // para no re-inicializar entrega en cada tecla
     let ultimoIdCliente = null;
@@ -189,6 +192,28 @@
         }
     }
 
+    function registrarGastoRecorrido() {
+        if (!clienteActual) {
+            cerrar();
+            return;
+        }
+
+        const monto = Number(gastoMonto) || 0;
+
+        if (monto > 0) {
+            const payload = {
+                diaRuta: clienteActual.diaEntrega || '',
+                montoGasto: monto,
+                notasGasto: gastoNotas || ''
+            };
+
+            dispatch('registrarGastoRecorrido', payload);
+        }
+
+        cerrar();
+    }
+
+
     function siguiente() {
         if (!esUltimo) index += 1;
         else cerrar();
@@ -279,6 +304,57 @@
                 <div class="text-xs text-gray-500">
                     Últ. mod: {fmt(clienteActual.lastModified)}
                 </div>
+
+
+            {#if esUltimo}
+                <div class="mt-4 border-t border-gray-300 pt-3 grid grid-cols-2 gap-3">
+                    <div class="col-span-2 flex items-center justify-between">
+                        <span class="text-gray-700 text-sm font-semibold">
+                            Gastos del recorrido
+                        </span>
+                        <span class="text-xs text-gray-500">
+                            opcional (solo si hubo gastos)
+                        </span>
+                    </div>
+
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs text-gray-500">Monto total de gastos</label>
+                        <input
+                            type="number"
+                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-800"
+                            bind:value={gastoMonto}
+                            min="0"
+                        />
+                    </div>
+
+                    <div class="col-span-2 flex flex-col gap-1">
+                        <label class="text-xs text-gray-500">Descripcion de los gastos</label>
+                        <textarea
+                            rows="2"
+                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-800"
+                            bind:value={gastoNotas}
+                        ></textarea>
+                    </div>
+
+                    <div class="col-span-2 flex justify-end gap-2 mt-2">
+                        <button
+                            type="button"
+                            class="px-3 py-1.5 rounded-md text-sm bg-gray-200 hover:bg-gray-300"
+                            on:click={cerrar}
+                        >
+                            Finalizar sin gastos
+                        </button>
+                        <button
+                            type="button"
+                            class="px-3 py-1.5 rounded-md text-sm bg-blue-600 hover:bg-blue-700 text-white"
+                            on:click={registrarGastoRecorrido}
+                        >
+                            Guardar gastos y finalizar ✅
+                        </button>
+                    </div>
+                </div>
+            {/if}
+
 
                 <!-- EDITAR DATOS DEL CLIENTE (ACORDEON) -->
                 <div class="mt-3 border-t border-gray-300 pt-2">

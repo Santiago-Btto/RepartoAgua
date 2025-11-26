@@ -298,6 +298,21 @@
             alert('No se pudo registrar la entrega.');
         }
     }
+     // -------- REGISTRAR GASTOS DEL RECORRIDO--------
+    async function handleRegistrarGastoRecorrido(e) {
+        const data = e.detail;
+        try {
+            await addDoc(collection(db, 'gastosRecorrido'), {
+                ...data,
+                fecha: serverTimestamp()
+            });
+            toast('Gastos del recorrido guardados ✔');
+        } catch (err) {
+            console.error('[GASTOS recorrido] ERROR', err);
+            alert('No se pudieron guardar los gastos del recorrido.');
+        }
+    }
+
 
 
     // -------- ELIMINAR (soft delete) --------
@@ -768,10 +783,11 @@
     <EmpezarDia
         clientes={clientesDelDia}
         preciosBase={preciosBase}
-        startIndex={indiceRutaActual}
         on:cerrar={() => (mostrarEmpezar = false)}
         on:guardar={handleGuardarEdicion}
         on:registrarEntrega={handleRegistrarEntrega}
+        on:registrarGastoRecorrido={handleRegistrarGastoRecorrido}
         on:agregarCliente={handleAgregarClienteDesdeRuta}
         />
     {/if}
+
