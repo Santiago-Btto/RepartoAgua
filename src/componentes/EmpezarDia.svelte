@@ -13,7 +13,9 @@
         precioDisp: 0
     };
 
+    export let startIndex = 0; // indice inicial dentro de la ruta
     let index = 0;            // índice del cliente actual
+
     let editable = {};        // copia editable del cliente actual
 
     // Datos de la entrega de hoy para el cliente actual
@@ -197,16 +199,18 @@
     }
 
     
-    // pedir al padre que abra el modal de "Crear cliente"
+    // pedir al padre que abra el modal de "crear cliente"
     function agregarClienteDesdeRuta() {
         if (!clienteActual) return;
         dispatch('agregarCliente', {
             dia: clienteActual.diaEntrega,
-            ordenSugerido: Number(clienteActual.orden) + 1
+            ordenSugerido: Number(clienteActual.orden) + 1,
+            indexActual: index
         });
     }
 
-    // Navegación con teclado
+
+    // navegacion con teclado
     function onKey(e) {
         if (e.key === 'ArrowRight') { e.preventDefault(); siguiente(); }
         else if (e.key === 'ArrowLeft') { e.preventDefault(); anterior(); }
@@ -214,7 +218,13 @@
         else if (e.key === 'Escape') { e.preventDefault(); cerrar(); }
     }
 
-    onMount(() => window.addEventListener('keydown', onKey));
+    onMount(() => {
+        // si el padre envia un indice inicial valido arrancamos desde ahi
+        if (typeof startIndex === 'number' && startIndex >= 0) {
+            index = startIndex;
+        }
+        window.addEventListener('keydown', onKey);
+    });
     onDestroy(() => window.removeEventListener('keydown', onKey));
 </script>
 

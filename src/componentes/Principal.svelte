@@ -42,6 +42,8 @@
     let diaPorDefecto = '';  // defaults cuando se crea cliente desde recorrido
     let ordenPorDefecto = '';
     let historialCliente = [];   // historial de entregas del cliente que se está editando
+    let indiceRutaActual = 0;    // indice del cliente actual en empezar dia
+
 
     // acordeón de eliminados
     let mostrarEliminados = false;
@@ -444,6 +446,11 @@
             .sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
     }
 
+    $: if (mostrarEmpezar && indiceRutaActual >= clientesDelDia.length) {
+        indiceRutaActual = clientesDelDia.length > 0 ? clientesDelDia.length - 1 : 0;
+    }
+
+
     // -------- Empezar dia --------
     function abrirEmpezarDia() {
         if (filtroDia === 'todos') {
@@ -458,18 +465,23 @@
             alert(`No hay clientes para ${filtroDia}.`);
             return;
         }
+
+        indiceRutaActual = 0; // cuando se abre el recorrido arranca en el primer cliente
         mostrarEmpezar = true;
     }
 
+
     // handler cuando EmpezarDia pide crear un cliente
     function handleAgregarClienteDesdeRuta(e) {
-        const { dia, ordenSugerido } = e.detail || {};
+        const { dia, ordenSugerido, indexActual } = e.detail || {};
         diaPorDefecto = dia || filtroDia;
         ordenPorDefecto = ordenSugerido ?? '';
+        indiceRutaActual = indexActual ?? 0;
         volverALaRuta = true;
         mostrarEmpezar = false;
         clienteACrear = true;
     }
+
 
     // abrir modal de edicion y cargar historial del cliente
     async function handleEditarCliente(e) {
@@ -756,6 +768,7 @@
     <EmpezarDia
         clientes={clientesDelDia}
         preciosBase={preciosBase}
+        startIndex={indiceRutaActual}
         on:cerrar={() => (mostrarEmpezar = false)}
         on:guardar={handleGuardarEdicion}
         on:registrarEntrega={handleRegistrarEntrega}
