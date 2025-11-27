@@ -790,6 +790,7 @@
         on:registrarEntrega={handleRegistrarEntrega}
         on:agregarCliente={handleAgregarClienteDesdeRuta}
         on:editar={handleEditarCliente}
+        on:registrarGastoRecorrido={handleRegistrarGastoRecorrido}
     />
 {/if}
 

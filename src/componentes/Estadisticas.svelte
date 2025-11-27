@@ -167,12 +167,30 @@
     return true;
     });
 
-    $: totalGastos = gastosFiltrados.reduce(
-        (acc, g) => acc + (Number(g.montoGasto) || 0),
+    // gastos por categoría (después de gastosFiltrados)
+    $: totalGastoAgua = gastosFiltrados.reduce(
+        (acc, g) => acc + (Number(g.gastoAgua) || 0),
+        0
+    );
+    $: totalGastoSoda = gastosFiltrados.reduce(
+        (acc, g) => acc + (Number(g.gastoSoda) || 0),
+        0
+    );
+    $: totalGastoCombustible = gastosFiltrados.reduce(
+        (acc, g) => acc + (Number(g.gastoCombustible) || 0),
+        0
+    );
+    $: totalGastoExtra = gastosFiltrados.reduce(
+        (acc, g) => acc + (Number(g.gastoExtra) || 0),
         0
     );
 
+    // total de gastos del periodo / día
+    $: totalGastos = totalGastoAgua + totalGastoSoda + totalGastoCombustible + totalGastoExtra;
+
+  
     $: saldoNeto = totalCobrado - totalGastos;
+
 
 
     $: conteoMedios = entregasFiltradas.reduce((acc, e) => {
@@ -270,6 +288,18 @@
             <p class="text-2xl font-semibold mt-1 text-sky-300">${saldoNeto}</p>
     </div>
 </section>
+
+        <!-- Gastos por categoría -->
+    <section class="bg-white border border-gray-300 rounded-lg p-3">
+        <h3 class="text-sm font-semibold text-gray-800 mb-2">Gastos por categoría</h3>
+        <p class="text-sm text-gray-700">
+            Agua: <span class="font-semibold">${totalGastoAgua}</span> &nbsp;•&nbsp;
+            Soda: <span class="font-semibold">${totalGastoSoda}</span> &nbsp;•&nbsp;
+            Combustible: <span class="font-semibold">${totalGastoCombustible}</span> &nbsp;•&nbsp;
+            Extra: <span class="font-semibold">${totalGastoExtra}</span>
+        </p>
+</section>
+
 
 
     <!-- Totales de unidades -->
