@@ -271,20 +271,20 @@
 
     <!-- Cards de resumen -->
     <section class="grid grid-cols-1 md:grid-cols-4 gap-3">
-        <div class="bg-[#111828] border border-gray-700 rounded-lg p-3">
-            <p class="text-xs text-gray-400">Ventas (monto total)</p>
+        <div class="bg-white border border-gray-300 rounded-lg p-3">
+            <p class="text-xs text-gray-900">Ventas (monto total)</p>
             <p class="text-2xl font-semibold mt-1 text-green-500">${totalVentas}</p>
     </div>
-        <div class="bg-[#111828] border border-gray-700 rounded-lg p-3">
-            <p class="text-xs text-gray-400">Cobrado</p>
+        <div class="bg-white border border-gray-300 rounded-lg p-3">
+            <p class="text-xs text-gray-900">Cobrado</p>
             <p class="text-2xl font-semibold mt-1 text-emerald-300">${totalCobrado}</p>
     </div>
-        <div class="bg-[#111828] border border-gray-700 rounded-lg p-3">
-            <p class="text-xs text-gray-400">Gastos del recorrido</p>
+        <div class="bg-white border border-gray-300 rounded-lg p-3">
+            <p class="text-xs text-gray-900">Gastos del recorrido</p>
             <p class="text-2xl font-semibold mt-1 text-red-300">${totalGastos}</p>
     </div>
-        <div class="bg-[#111828] border border-gray-700 rounded-lg p-3">
-            <p class="text-xs text-gray-400">Saldo neto (cobrado - gastos)</p>
+        <div class="bg-white border border-gray-300 rounded-lg p-3">
+            <p class="text-xs text-gray-900">Saldo neto (cobrado - gastos)</p>  
             <p class="text-2xl font-semibold mt-1 text-sky-300">${saldoNeto}</p>
     </div>
 </section>
