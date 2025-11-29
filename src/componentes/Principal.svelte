@@ -7,13 +7,13 @@
         getDocs, where, writeBatch, addDoc,
         getDoc, setDoc
     } from "firebase/firestore";
-
     import Estadisticas from './Estadisticas.svelte';
     import FormCrear from './FormCrear.svelte';
     import ListaClientes from './ListaClientes.svelte';
     import ModalEditar from './ModalEditar.svelte';
     import Filtros from './Filtros.svelte';
     import EmpezarDia from './EmpezarDia.svelte';
+    import { logOut } from '../store/userStore.js';
 
     // vista actual
     let vista = 'clientes';          // 'clientes' | 'estadisticas'
@@ -535,10 +535,9 @@
                 </button>
             </div>
 
-            <button class="text-sm text-gray-500 hover:text-gray-900" on:click={handleRefresh}>
-                🔁 Actualizar
+            <button class="text-sm bg-red-700 hover:bg-red-900 text-white px-2 py-1 rounded border border-red-800" on:click={logOut}>
+                Salir
             </button>
-            <small class="text-gray-500">{syncMsg}</small>
         </div>
     </header>
 
