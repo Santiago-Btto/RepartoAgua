@@ -422,90 +422,6 @@
             </div>
         {/if}
 
-                <!-- EDITAR DATOS DEL CLIENTE (ACORDEON) -->
-                <div class="mt-3 border-t border-gray-300 pt-2">
-                    <button
-                        type="button"
-                        class="w-full flex items-center justify-between text-sm text-gray-800 py-1"
-                        on:click={() => (mostrarEditarCliente = !mostrarEditarCliente)}
-                    >
-                        <span>Editar datos del cliente (stock / notas)</span>
-                        <span class="text-gray-500 text-lg">
-                            {mostrarEditarCliente ? '▾' : '▸'}
-                        </span>
-                    </button>
-
-                    {#if mostrarEditarCliente}
-                        <div class="mt-2 grid grid-cols-2 gap-3">
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-gray-500">Stock 20L</label>
-                                <input
-                                    type="number"
-                                    class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-100"
-                                    bind:value={editable.stock20}
-                                    min="0"
-                                />
-                            </div>
-
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-gray-500">Stock 12L</label>
-                                <input
-                                    type="number"
-                                    class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-100"
-                                    bind:value={editable.stock12}
-                                    min="0"
-                                />
-                            </div>
-
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-gray-500">Sifones</label>
-                                <input
-                                    type="number"
-                                    class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-100"
-                                    bind:value={editable.stockSif}
-                                    min="0"
-                                />
-                            </div>
-
-                            <div class="flex flex-col gap-1">
-                                <label class="text-xs text-gray-500">Jugos / Amargos</label>
-                                <input
-                                    type="number"
-                                    class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-100"
-                                    bind:value={editable.stockDispenser}
-                                    min="0"
-                                />
-                            </div>
-
-                            <div class="col-span-2 flex flex-col gap-1">
-                                <label class="text-xs text-gray-500">Notas del cliente</label>
-                                <textarea
-                                    rows="2"
-                                    class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-100"
-                                    bind:value={editable.notas}
-                                ></textarea>
-                            </div>
-
-                            <div class="col-span-2 flex justify-end gap-2 mt-2">
-                                <button
-                                    type="button"
-                                    class="px-3 py-1.5 rounded-md text-sm bg-gray-200 hover:bg-gray-300"
-                                    on:click={() => guardar(false)}
-                                >
-                                    💾 Guardar cambios cliente
-                                </button>
-                                <button
-                                    type="button"
-                                    class="px-3 py-1.5 rounded-md text-sm bg-blue-600 hover:bg-blue-700 text-white"
-                                    on:click={() => guardar(true)}
-                                >
-                                    {esUltimo ? 'Guardar y finalizar ✅' : 'Guardar y siguiente ▶'}
-                                </button>
-                            </div>
-                        </div>
-                    {/if}
-                </div>
-
                 <!-- ENTREGA DEL DIA -->
                 <div class="mt-4 border-t border-gray-300 pt-3 grid grid-cols-2 gap-3">
                     <div class="col-span-2 flex items-center justify-between">
@@ -618,6 +534,90 @@
                     </div>
                 </div>
             </div>
+
+                            <!-- EDITAR DATOS DEL CLIENTE (ACORDEON) -->
+                <div class="mt-3 border-t border-gray-300 pt-2">
+                    <button
+                        type="button"
+                        class="w-full flex items-center justify-between text-sm text-gray-800 py-1"
+                        on:click={() => (mostrarEditarCliente = !mostrarEditarCliente)}
+                    >
+                        <span>Editar datos del cliente (stock / notas)</span>
+                        <span class="text-gray-500 text-lg">
+                            {mostrarEditarCliente ? '▾' : '▸'}
+                        </span>
+                    </button>
+
+                    {#if mostrarEditarCliente}
+                        <div class="mt-2 grid grid-cols-2 gap-3">
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-gray-500">Stock 20L</label>
+                                <input
+                                    type="number"
+                                    class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-100"
+                                    bind:value={editable.stock20}
+                                    min="0"
+                                />
+                            </div>
+
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-gray-500">Stock 12L</label>
+                                <input
+                                    type="number"
+                                    class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-100"
+                                    bind:value={editable.stock12}
+                                    min="0"
+                                />
+                            </div>
+
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-gray-500">Sifones</label>
+                                <input
+                                    type="number"
+                                    class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-100"
+                                    bind:value={editable.stockSif}
+                                    min="0"
+                                />
+                            </div>
+
+                            <div class="flex flex-col gap-1">
+                                <label class="text-xs text-gray-500">Jugos / Amargos</label>
+                                <input
+                                    type="number"
+                                    class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-100"
+                                    bind:value={editable.stockDispenser}
+                                    min="0"
+                                />
+                            </div>
+
+                            <div class="col-span-2 flex flex-col gap-1">
+                                <label class="text-xs text-gray-500">Notas del cliente</label>
+                                <textarea
+                                    rows="2"
+                                    class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-100"
+                                    bind:value={editable.notas}
+                                ></textarea>
+                            </div>
+
+                            <div class="col-span-2 flex justify-end gap-2 mt-2">
+                                <button
+                                    type="button"
+                                    class="px-3 py-1.5 rounded-md text-sm bg-gray-200 hover:bg-gray-300"
+                                    on:click={() => guardar(false)}
+                                >
+                                    💾 Guardar cambios cliente
+                                </button>
+                                <button
+                                    type="button"
+                                    class="px-3 py-1.5 rounded-md text-sm bg-blue-600 hover:bg-blue-700 text-white"
+                                    on:click={() => guardar(true)}
+                                >
+                                    {esUltimo ? 'Guardar y finalizar ✅' : 'Guardar y siguiente ▶'}
+                                </button>
+                            </div>
+                        </div>
+                    {/if}
+                </div>
 
             <!-- Navegacion simple -->
             <div class="mt-4 flex items-center justify-between">
