@@ -9,6 +9,7 @@
     let data = {
         nombre: '',
         direccion: '',
+        zona: '',
         telefono: '',
         diaEntrega: '',
         estado: 'activo',
@@ -28,22 +29,24 @@
         data.orden = ordenInicial;
     }
 
-    function sanitizeForCreate(src) {
-        return {
-            nombre: (src.nombre || '').trim(),
-            direccion: (src.direccion || '').trim(),
-            telefono: (src.telefono ?? '').toString().trim(),
-            diaEntrega: src.diaEntrega,
-            estado: src.estado || 'activo',
-            stock20: Number(src.stock20) || 0,
-            stock12: Number(src.stock12) || 0,
-            stockSif: Number(src.stockSif) || 0,
-            stockDispenser: Number(src.stockDispenser) || 0,
-            orden: Number(src.orden),
-            notas: (src.notas || '').trim(),
-            dispenser: src.dispenser
-        };
-    }
+function sanitizeForCreate(src) {
+    return {
+        nombre: (src.nombre || '').trim(),
+        direccion: (src.direccion || '').trim(),
+        zona: (src.zona || '').trim(), 
+        telefono: (src.telefono ?? '').toString().trim(),
+        diaEntrega: src.diaEntrega,
+        estado: src.estado || 'activo',
+        stock20: Number(src.stock20) || 0,
+        stock12: Number(src.stock12) || 0,
+        stockSif: Number(src.stockSif) || 0,
+        stockDispenser: Number(src.stockDispenser) || 0,
+        orden: Number(src.orden),
+        notas: (src.notas || '').trim(),
+        dispenser: src.dispenser
+    };
+}
+
 
     function handleSubmit() {
         if (!data.nombre || !data.diaEntrega || !data.orden) {
@@ -71,13 +74,24 @@
                 <h3 class="text-base font-semibold text-gray-900 col-span-full border-b border-gray-300 pb-1 mb-1">
                     Datos Generales:
                 </h3>
-                <div>
+                <!-- Nombre ocupa toda la fila -->
+                <div class="col-span-full">
                     <p class="text-sm text-gray-500">Nombre</p>
                     <input class={inputClass} placeholder="Nombre" required bind:value={data.nombre} />
                 </div>
+
+                <!-- Dirección y Zona en la misma fila -->
                 <div>
                     <p class="text-sm text-gray-500">Dirección</p>
                     <input class={inputClass} placeholder="Dirección" bind:value={data.direccion} />
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">Zona / Distrito</p>
+                    <input
+                        class={inputClass}
+                        placeholder="Ej: Dorrego, Las Heras..."
+                        bind:value={data.zona}
+                    />
                 </div>
                 <div>
                     <p class="text-sm text-gray-500">Teléfono</p>

@@ -7,7 +7,7 @@
     export let guardando = false;  // opcional
 
     const dispatch = createEventDispatcher();
-    let data = { ...cliente };
+    let data = { zona: '', ...cliente };
     console.log(data)
     // ===== AGREGAR PEDIDO (como EmpezarDia) =====
     let pedido = {
@@ -179,19 +179,28 @@
         ============================== -->
         <form on:submit|preventDefault={handleSave}>
             <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[350px] overflow-y-auto p-1">
-
                 <h3 class="text-base font-semibold text-gray-900 col-span-full border-b border-gray-300 pb-1 mb-1">
                     Datos Generales:
                 </h3>
 
-                <div>
+                <div class="col-span-full">
                     <p class="text-sm text-gray-500">Nombre</p>
                     <input class={inputClass} required bind:value={data.nombre} />
                 </div>
+
                 <div>
                     <p class="text-sm text-gray-500">Dirección</p>
                     <input class={inputClass} bind:value={data.direccion} />
                 </div>
+                <div>
+                    <p class="text-sm text-gray-500">Zona / Distrito</p>
+                    <input
+                        class={inputClass}
+                        bind:value={data.zona}
+                        placeholder="Ej: Dorrego, Las Heras..."
+                    />
+                </div>
+
                 <div>
                     <p class="text-sm text-gray-500">Teléfono</p>
                     <input class={inputClass} bind:value={data.telefono} />
@@ -214,6 +223,7 @@
                     <p class="text-sm text-gray-500">Orden</p>
                     <input class={inputClass} type="number" bind:value={data.orden} />
                 </div>
+
 
                 <!-- STOCK -->
                 <h3 class="text-base font-semibold text-gray-900 col-span-full border-b border-gray-300 pb-1 mt-4 mb-1">

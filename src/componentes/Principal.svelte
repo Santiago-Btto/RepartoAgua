@@ -79,6 +79,7 @@
     return {
         nombre: (data.nombre || '').trim(),
         direccion: (data.direccion || '').trim(),
+        zona: (data.zona || '').trim(),
         telefono: telefonoSolo,
         diaEntrega: data.diaEntrega,
         estado: data.estado || 'activo',
@@ -414,6 +415,7 @@
             const hay =
                 (c.nombre || '').toLowerCase().includes(term) ||
                 (c.direccion || '').toLowerCase().includes(term) ||
+                (c.zona || '').toLowerCase().includes(term) ||  
                 ((c.telefono ?? '') + '').toLowerCase().includes(term) ||
                 (c.notas || '').toLowerCase().includes(term);
             if (!hay) return false;
