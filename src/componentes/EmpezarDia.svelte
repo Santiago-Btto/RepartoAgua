@@ -443,7 +443,7 @@
                         <label class="text-xs text-gray-500">Cant. Sifones</label>
                         <input
                             type="number"
-                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-900"
+                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-base text-gray-900"
                             bind:value={entrega.cantSif}
                             min="0"
                         />
@@ -453,7 +453,7 @@
                         <label class="text-xs text-gray-500">Cant. 20L</label>
                         <input
                             type="number"
-                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-900"
+                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-base text-gray-900"
                             bind:value={entrega.cant20}
                             min="0"
                         />
@@ -463,7 +463,7 @@
                         <label class="text-xs text-gray-500">Cant. 12L</label>
                         <input
                             type="number"
-                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-900"
+                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-base text-gray-900"
                             bind:value={entrega.cant12}
                             min="0"
                         />
@@ -473,7 +473,7 @@
                         <label class="text-xs text-gray-500">Cant. Jugos / Amargos</label>
                         <input
                             type="number"
-                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-900"
+                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-base text-gray-900"
                             bind:value={entrega.cantDisp}
                             min="0"
                         />
@@ -483,7 +483,7 @@
                         <label class="text-xs text-gray-500">Monto cobrado</label>
                         <input
                             type="number"
-                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-900"
+                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-base text-gray-900"
                             bind:value={entrega.cobrado}
                             min="0"
                         />
@@ -492,7 +492,7 @@
                     <div class="flex flex-col gap-1">
                         <label class="text-xs text-gray-500">Medio de pago</label>
                         <select
-                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-900"
+                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-base text-gray-900"
                             bind:value={entrega.medioPago}
                         >
                             <option value="efectivo">efectivo</option>
@@ -511,7 +511,7 @@
                         <label class="text-xs text-gray-500">Notas de la entrega</label>
                         <textarea
                             rows="2"
-                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-sm text-gray-900"
+                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-base text-gray-900"
                             bind:value={entrega.notasEntrega}
                         ></textarea>
                     </div>
