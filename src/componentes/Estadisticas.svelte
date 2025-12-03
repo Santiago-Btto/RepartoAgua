@@ -16,11 +16,14 @@
     let filtroDiaRuta = 'todos';   // lunes, martes... o todos
     let filtroPeriodo = 'hoy';     // hoy, 7dias, 30dias, todo
     let filtroNombre = '';         // nombre de cliente aplicado
+    let filtroFechaExacta = '';    // YYYY-MM-DD aplicado
+    let fechaInput;
 
     // valores que se editan en la UI
     let uiFiltroDiaRuta = 'todos';
     let uiFiltroPeriodo = 'hoy';
     let uiFiltroNombre = '';       // texto del input
+    let uiFechaExacta = '';        // YYYY-MM-DD elegida en el calendario
 
     // token para forzar recálculo de los $:
     let recalcToken = 0;
@@ -75,9 +78,18 @@
         const d = toJsDate(entrega.fecha);
         if (!d) return false;
 
+        const fechaEntrega = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
+        
+        if (filtroFechaExacta) {
+            const [y, m, day] = filtroFechaExacta.split('-').map(Number); // YYYY-MM-DD
+            const fechaFiltro = new Date(y, m - 1, day);
+            return fechaEntrega.getTime() === fechaFiltro.getTime();
+        }
+
+        // si no hay fecha exacta usamos el filtroPeriodo como antes
         const ahora = new Date();
         const hoy = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
-        const fechaEntrega = new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
         if (filtroPeriodo === 'todo') return true;
 
@@ -100,11 +112,13 @@
         return true;
     }
 
+
     // aplicar filtros desde la UI
     function aplicarFiltros() {
         filtroPeriodo = uiFiltroPeriodo;
         filtroDiaRuta = uiFiltroDiaRuta;
         filtroNombre = (uiFiltroNombre || '').trim().toLowerCase();
+        filtroFechaExacta = uiFechaExacta;  
         recalcToken++;
     }
 
@@ -113,13 +127,16 @@
         uiFiltroPeriodo = 'hoy';
         uiFiltroDiaRuta = 'todos';
         uiFiltroNombre = '';
+        uiFechaExacta = '';
 
         filtroPeriodo = 'hoy';
         filtroDiaRuta = 'todos';
         filtroNombre = '';
+        filtroFechaExacta = '';
 
         recalcToken++;
     }
+
 
     // ---- filtro principal sobre las entregas ----
     $: entregasFiltradas = (recalcToken, entregas).filter(e => {
@@ -203,6 +220,16 @@
     $: cantEfectivo    = conteoMedios.efectivo     || 0;
     $: cantMercadoPago = conteoMedios.mercado_pago || 0;
     $: cantFiado       = conteoMedios.fiado        || 0;
+
+    function abrirDatePicker() {
+        // En navegadores que soportan showPicker()
+        if (fechaInput && typeof fechaInput.showPicker === 'function') {
+            fechaInput.showPicker();
+        }
+        // En iPhone/Safari, con readonly, igual se abre el picker al tocar
+    }
+
+
 </script>
 
 <div class="max-w-5xl mx-auto p-4 grid gap-4">
@@ -217,56 +244,69 @@
             {/if}
         </div>
 
-        <!-- Filtros -->
-        <div class="flex flex-wrap gap-2 text-sm items-center">
-            <!-- Buscar cliente -->
-            <input
-                type="text"
-                placeholder="Buscar cliente..."
-                class="bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 w-40 md:w-52"
-                bind:value={uiFiltroNombre}
-            />
+    <!-- Filtros -->
+    <div class="flex flex-wrap gap-2 text-sm items-center">
+        <!-- Buscar cliente -->
+        <input
+            type="text"
+            placeholder="Buscar cliente..."
+            class="bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800 w-40 md:w-52"
+            bind:value={uiFiltroNombre}
+        />
 
-            <select
-                bind:value={uiFiltroPeriodo}
-                class="bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800"
-            >
-                <option value="hoy">Hoy</option>
-                <option value="7dias">Últimos 7 días</option>
-                <option value="30dias">Últimos 30 días</option>
-                <option value="todo">Todo</option>
-            </select>
+        <!-- Periodo (hoy, 7 días, etc.) -->
+        <select
+            bind:value={uiFiltroPeriodo}
+            class="bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800"
+        >
+            <option value="hoy">Hoy</option>
+            <option value="7dias">Últimos 7 días</option>
+            <option value="30dias">Últimos 30 días</option>
+            <option value="todo">Todo</option>
+        </select>
 
-            <select
-                bind:value={uiFiltroDiaRuta}
-                class="bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800"
-            >
-                <option value="todos">Todos los días</option>
-                <option value="lunes">lunes</option>
-                <option value="martes">martes</option>
-                <option value="miercoles">miercoles</option>
-                <option value="jueves">jueves</option>
-                <option value="viernes">viernes</option>
-                <option value="sabado">sabado</option>
-                <option value="domingo">domingo</option>
-            </select>
+        <!-- fecha exacta -->
+        <input
+            type="date"
+            class="bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800"
+            bind:this={fechaInput}
+            bind:value={uiFechaExacta}
+            on:click={abrirDatePicker}
+            on:keydown|preventDefault
+        />
 
-            <button
-                type="button"
-                class="px-3 py-1 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-gray-900"
-                on:click={aplicarFiltros}
-            >
-                Aplicar filtros
-            </button>
+        <!-- Dia de la ruta -->
+        <select
+            bind:value={uiFiltroDiaRuta}
+            class="bg-white border border-gray-300 rounded-md px-2 py-1 text-gray-800"
+        >
+            <option value="todos">Todos los días</option>
+            <option value="lunes">lunes</option>
+            <option value="martes">martes</option>
+            <option value="miercoles">miercoles</option>
+            <option value="jueves">jueves</option>
+            <option value="viernes">viernes</option>
+            <option value="sabado">sabado</option>
+            <option value="domingo">domingo</option>
+        </select>
 
-            <button
-                type="button"
-                class="px-3 py-1 rounded-md bg-gray-200 hover:bg-gray-300"
-                on:click={resetFiltros}
-            >
-                Reset
-            </button>
-        </div>
+        <button
+            type="button"
+            class="px-3 py-1 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-gray-900"
+            on:click={aplicarFiltros}
+        >
+            Aplicar filtros
+        </button>
+
+        <button
+            type="button"
+            class="px-3 py-1 rounded-md bg-gray-200 hover:bg-gray-300"
+            on:click={resetFiltros}
+        >
+            Resetear
+        </button>
+    </div>
+
     </header>
 
     <!-- Cards de resumen -->
