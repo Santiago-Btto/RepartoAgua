@@ -342,7 +342,7 @@
 
 
 
-    <!-- Totales de unidades -->
+       <!-- Totales de unidades -->
     <section class="bg-white border border-gray-300 rounded-lg p-3">
         <h3 class="text-sm font-semibold text-gray-800 mb-2">Unidades entregadas</h3>
         <p class="text-sm text-gray-700">
@@ -352,6 +352,17 @@
             Jugos o Amargos: <span class="font-semibold">{totalDisp}</span>
         </p>
     </section>
+
+        <!-- Medios de pago --> 
+    <section class="bg-white border border-gray-300 rounded-lg p-3">
+        <h3 class="text-sm font-semibold text-gray-800 mb-2">Medios de pago</h3>
+        <p class="text-sm text-gray-700">
+            efectivo: <span class="font-semibold">{cantEfectivo}</span> &nbsp;•&nbsp;
+            mercado pago: <span class="font-semibold">{cantMercadoPago}</span> &nbsp;•&nbsp;
+            fiado: <span class="font-semibold">{cantFiado}</span>
+        </p>
+    </section>
+
 
     <!-- Tabla de entregas -->
     <section class="bg-white border border-gray-300 rounded-lg p-3">
@@ -407,11 +418,6 @@
                     </tbody>
                 </table>
             </div>
-                <p class="text-xs text-gray-500 mt-2">
-                efectivo: {cantEfectivo} •
-                mercado pago: {cantMercadoPago} •
-                fiado: {cantFiado}
-            </p>
         {/if}
     </section>
 </div>
