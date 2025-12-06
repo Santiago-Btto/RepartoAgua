@@ -19,9 +19,10 @@ onAuthStateChanged(auth, async (firebaseUser) => {
                 // Combinamos datos de Auth + Datos de Firestore
                 const userData = docSnap.data();
                 user.set({ 
-                uid: firebaseUser.uid, 
-                email: firebaseUser.email, 
-                role: userData.role
+                    uid: firebaseUser.uid, 
+                    email: firebaseUser.email, 
+                    role: userData.role,
+                    active: userData.active
                 });
             } else {
                 // Si no tiene rol asignado, es un usuario normal

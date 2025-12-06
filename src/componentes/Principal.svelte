@@ -13,7 +13,8 @@
     import ModalEditar from './ModalEditar.svelte';
     import Filtros from './Filtros.svelte';
     import EmpezarDia from './EmpezarDia.svelte';
-    import { logOut } from '../store/userStore.js';
+    import { logOut, user } from '../store/userStore.js';
+    import GestionUsuarios from './GestionUsuarios.svelte';
 
     // vista actual
     let vista = 'clientes';          // 'clientes' | 'estadisticas'
@@ -21,6 +22,9 @@
     // modal empezar día
     let mostrarEmpezar = false;
     let clientesDelDia = [];
+    let menu = false;
+    
+    $: isAdmin = $user.role === 'admin';
 
     // precios base (config global)
     let preciosBase = {
@@ -60,6 +64,23 @@
         { clave: 'costo_elevado',  p: 'Elevado costo del producto' },
         { clave: 'competencia',    p: 'Competencia (bajo costo)' }
     ];
+
+    function navegar(nuevaVista) {
+        vista = nuevaVista;
+        menu = false;
+    }
+
+    function clickAfuera(node) {
+        const handleClick = event => {
+            if (node && !node.contains(event.target) && !event.defaultPrevented) {
+                menu = false;
+            }
+        }
+        document.addEventListener('click', handleClick, true);
+        return {
+            destroy() { document.removeEventListener('click', handleClick, true); }
+        }
+    }
 
     const setSync = (text) => { syncMsg = text || ''; };
     const toast = (msg) => { toastMsg = msg; setTimeout(() => (toastMsg = ''), 2200); };
@@ -515,31 +536,72 @@
     <header class="sticky top-0 z-10 flex items-center justify-between bg-white p-4 border-b border-gray-300 shadow-sm">
         <h1 class="text-lg font-semibold text-gray-900">Reparto de Agua 🚍</h1>
 
-        <div class="flex items-center gap-3">
-            <div class="flex items-center gap-1 text-xs md:text-sm">
-                <button
-                    class="px-2 py-1 rounded-md border
-                        {vista === 'clientes'
-                            ? 'bg-blue-600 border-blue-500 text-white'
-                            : 'bg-transparent border-gray-600 text-gray-700 hover:bg-white shadow-sm'}"
-                    on:click={() => vista = 'clientes'}
-                >
-                    📋 Clientes
-                </button>
-                <button
-                    class="px-2 py-1 rounded-md border
-                        {vista === 'estadisticas'
-                            ? 'bg-blue-600 border-blue-500 text-white'
-                            : 'bg-transparent border-gray-600 text-gray-700 hover:bg-white shadow-sm'}"
-                    on:click={() => vista = 'estadisticas'}
-                >
-                    📊 Estadísticas
-                </button>
-            </div>
-
-            <button class="text-sm bg-red-700 hover:bg-red-900 text-white px-2 py-1 rounded border border-red-800" on:click={logOut}>
-                Salir
+        <div class="relative" use:clickAfuera>
+        
+            <button 
+                on:click={() => menu = !menu}
+                class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 border border-gray-200 transition focus:ring-2 focus:ring-blue-200"
+                title="Menú de usuario"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
             </button>
+
+            {#if menu}
+                <div class="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-40 origin-top-right">
+                    
+                    <div class="px-4 py-3 border-b border-gray-100 bg-gray-50">
+                        <p class="text-sm font-medium text-gray-900 truncate">{$user?.email || 'Usuario'}</p>
+                        {#if isAdmin}
+                            <span class="text-[10px] uppercase font-bold text-blue-600 tracking-wide">Administrador</span>
+                        {/if}
+                    </div>
+
+                    <div class="py-1">
+                        <button 
+                            class="w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-gray-50
+                            {vista === 'clientes' ? 'text-blue-600 font-semibold bg-blue-50' : 'text-gray-700'}"
+                            on:click={() => navegar('clientes')}
+                        >
+                            <span>📋</span> Clientes
+                        </button>
+
+                        {#if isAdmin}
+                            <button 
+                                class="w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-gray-50
+                                {vista === 'estadisticas' ? 'text-blue-600 font-semibold bg-blue-50' : 'text-gray-700'}"
+                                on:click={() => navegar('estadisticas')}
+                            >
+                                <span>📊</span> Estadísticas
+                            </button>
+                        {/if}
+
+                        {#if isAdmin}
+                            <button 
+                                class="w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-gray-50
+                                {vista === 'usuarios' ? 'text-blue-600 font-semibold bg-blue-50' : 'text-gray-700'}"
+                                on:click={() => navegar('usuarios')}
+                            >
+                                <span>👥</span> Gestión Usuarios
+                            </button>
+                        {/if}
+                    </div>
+
+                    <div class="border-t border-gray-100 py-1">
+                        <button 
+                            class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                            on:click={() => { menu = false; logOut(); }}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                            Cerrar Sesión
+                        </button>
+                    </div>
+
+                </div>
+            {/if}
         </div>
     </header>
 
@@ -742,9 +804,11 @@
                 </section>
             </div>
         {/if}
-    {:else}
+    {:else if vista === 'estadisticas'}
         <!-- ESTADISTICAS -->
         <Estadisticas />
+    {:else if vista === 'usuarios'}
+        <GestionUsuarios />
     {/if}
 
     {#if clienteAEditar}
