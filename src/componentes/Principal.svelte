@@ -15,6 +15,7 @@
     import EmpezarDia from './EmpezarDia.svelte';
     import { logOut, user } from '../store/userStore.js';
     import GestionUsuarios from './GestionUsuarios.svelte';
+  import VistaRepartidor from './VistaRepartidor.svelte';
 
     // vista actual
     let vista = 'clientes';          // 'clientes' | 'estadisticas'
@@ -606,203 +607,207 @@
     </header>
 
     {#if vista === 'clientes'}
-        <!-- VISTA CLIENTES -->
-        <div class="max-w-5xl mx-auto p-4 grid gap-4">
-            <Filtros
-                bind:term={filtroTerm}
-                bind:dia={filtroDia}
-                bind:estado={filtroEstado}
-                total={totalClientes}
-                    on:crear={() => {
-                    diaPorDefecto = '';
-                    ordenPorDefecto = '';
-                    clienteACrear = true;
-                }}
-            />
-
-            <!-- PRECIOS BASE -->
-            <section class="bg-white border border-gray-300 rounded-lg p-3 text-sm">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="font-semibold text-gray-800">Precios actuales</span>
-                    <button
-                        type="button"
-                        class="px-3 py-1 rounded-md text-xs bg-gray-200 hover:bg-gray-300"
-                        on:click={guardarPrecios}
-                    >
-                        💾 Guardar precios
-                    </button>
-                </div>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-                    <div class="flex flex-col gap-1">
-                        <p class="text-xs text-gray-500">20L</p>
-                        <input
-                            type="number"
-                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-xs text-gray-900"
-                            bind:value={preciosBase.precio20}
-                            min="0"
-                        />
-                    </div>
-                    <div class="flex flex-col gap-1">
-                        <p class="text-xs text-gray-500">12L</p>
-                        <input
-                            type="number"
-                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-xs text-gray-900"
-                            bind:value={preciosBase.precio12}
-                            min="0"
-                        />
-                    </div>
-                    <div class="flex flex-col gap-1">
-                        <p class="text-xs text-gray-500">Sifón</p>
-                        <input
-                            type="number"
-                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-xs text-gray-900"
-                            bind:value={preciosBase.precioSif}
-                            min="0"
-                        />
-                    </div>
-                    <div class="flex flex-col gap-1">
-                        <p class="text-xs text-gray-500">Jugos o Amargos</p>
-                        <input
-                            type="number"
-                            class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-xs text-gray-900"
-                            bind:value={preciosBase.precioDisp}
-                            min="0"
-                        />
-                    </div>
-                </div>
-            </section>
-
-            <div class="flex items-center justify-end max-w-5xl mx-auto px-4 -mt-2">
-                <button
-                    class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
-                    on:click={abrirEmpezarDia}
-                    disabled={filtroDia === 'todos'}>
-                    ▶ Empezar día {filtroDia !== 'todos' ? `(${filtroDia})` : ''}
-                </button>
-            </div>
-
-            <section class="bg-white border border-gray-300 rounded-lg p-4">
-                <ListaClientes
-                    grupos={gruposRender}
-                    on:editar={handleEditarCliente}
-                    on:eliminar={handleEliminarCliente}
+        {#if $user.role === 'admin'}
+            <!-- VISTA CLIENTES -->
+            <div class="max-w-5xl mx-auto p-4 grid gap-4">
+                <Filtros
+                    bind:term={filtroTerm}
+                    bind:dia={filtroDia}
+                    bind:estado={filtroEstado}
+                    total={totalClientes}
+                        on:crear={() => {
+                        diaPorDefecto = '';
+                        ordenPorDefecto = '';
+                        clienteACrear = true;
+                    }}
                 />
 
-            </section>
-        </div>
+                <!-- PRECIOS BASE -->
+                <section class="bg-white border border-gray-300 rounded-lg p-3 text-sm">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-semibold text-gray-800">Precios actuales</span>
+                        <button
+                            type="button"
+                            class="px-3 py-1 rounded-md text-xs bg-gray-200 hover:bg-gray-300"
+                            on:click={guardarPrecios}
+                        >
+                            💾 Guardar precios
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                        <div class="flex flex-col gap-1">
+                            <p class="text-xs text-gray-500">20L</p>
+                            <input
+                                type="number"
+                                class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-xs text-gray-900"
+                                bind:value={preciosBase.precio20}
+                                min="0"
+                            />
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <p class="text-xs text-gray-500">12L</p>
+                            <input
+                                type="number"
+                                class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-xs text-gray-900"
+                                bind:value={preciosBase.precio12}
+                                min="0"
+                            />
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <p class="text-xs text-gray-500">Sifón</p>
+                            <input
+                                type="number"
+                                class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-xs text-gray-900"
+                                bind:value={preciosBase.precioSif}
+                                min="0"
+                            />
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <p class="text-xs text-gray-500">Jugos o Amargos</p>
+                            <input
+                                type="number"
+                                class="bg-gray-50 border border-gray-300 rounded-md px-2 py-1 text-xs text-gray-900"
+                                bind:value={preciosBase.precioDisp}
+                                min="0"
+                            />
+                        </div>
+                    </div>
+                </section>
 
-        {#if clientesEliminadosBase.length}
-            <div class="max-w-5xl mx-auto px-4 pb-6">
-                <section class="bg-white border border-red-700/60 rounded-lg mt-4 overflow-hidden">
-                    <!-- "Acordeon" -->
+                <div class="flex items-center justify-end max-w-5xl mx-auto px-4 -mt-2">
                     <button
-                        type="button"
-                        class="w-full flex items-center justify-between px-4 py-3 text-sm"
-                        on:click={() => (mostrarEliminados = !mostrarEliminados)}
-                    >
-                        <div class="flex items-center gap-2">
-                            <h2 class="font-semibold text-red-500">
-                                Clientes eliminados
-                            </h2>
-                            <span class="text-xs px-2 py-0.5 rounded-full bg-red-800 text-white">
-                                {clientesEliminadosBase.length}
-                            </span>
-                        </div>
-                        <span class="text-gray-500 text-lg">
-                            {mostrarEliminados ? '▾' : '▸'}
-                        </span>
+                        class="px-4 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50"
+                        on:click={abrirEmpezarDia}
+                        disabled={filtroDia === 'todos'}>
+                        ▶ Empezar día {filtroDia !== 'todos' ? `(${filtroDia})` : ''}
                     </button>
+                </div>
 
-                    {#if mostrarEliminados}
-                        <div class="border-t border-red-700/60 p-4 max-h-80 overflow-y-auto">
-                            <!-- Filtros por motivo -->
-                            <div class="flex flex-wrap items-center gap-2 mb-3 text-xs">
-                                <span class="text-gray-700 mr-1">Motivo:</span>
+                <section class="bg-white border border-gray-300 rounded-lg p-4">
+                    <ListaClientes
+                        grupos={gruposRender}
+                        on:editar={handleEditarCliente}
+                        on:eliminar={handleEliminarCliente}
+                    />
 
-                                <button
-                                    type="button"
-                                    class="px-2 py-1 rounded-full border
-                                        {filtroMotivoElim === 'todos'
-                                            ? 'bg-red-700 text-white border-red-500'
-                                            : 'bg-transparent text-gray-800 border-red-700 hover:bg-red-800/20'}"
-                                    on:click={() => filtroMotivoElim = 'todos'}
-                                >
-                                    Todos ({clientesEliminadosBase.length})
-                                </button>
-
-                                <button
-                                    type="button"
-                                    class="px-2 py-1 rounded-full border
-                                        {filtroMotivoElim === 'mala_atencion'
-                                            ? 'bg-red-700 text-gray-900 border-red-500'
-                                            : 'bg-transparent text-gray-800 border-red-700 hover:bg-red-800/20'}"
-                                    on:click={() => filtroMotivoElim = 'mala_atencion'}
-                                >
-                                    Mala atención ({conteosMotivo.mala_atencion})
-                                </button>
-
-                                <button
-                                    type="button"
-                                    class="px-2 py-1 rounded-full border
-                                        {filtroMotivoElim === 'mala_calidad'
-                                            ? 'bg-red-700 text-gray-900 border-red-500'
-                                            : 'bg-transparent text-gray-800 border-red-700 hover:bg-red-800/20'}"
-                                    on:click={() => filtroMotivoElim = 'mala_calidad'}
-                                >
-                                    Mala calidad ({conteosMotivo.mala_calidad})
-                                </button>
-
-                                <button
-                                    type="button"
-                                    class="px-2 py-1 rounded-full border
-                                        {filtroMotivoElim === 'costo_elevado'
-                                            ? 'bg-red-700 text-gray-900 border-red-500'
-                                            : 'bg-transparent text-gray-800 border-red-700 hover:bg-red-800/20'}"
-                                    on:click={() => filtroMotivoElim = 'costo_elevado'}
-                                >
-                                    Costo elevado ({conteosMotivo.costo_elevado})
-                                </button>
-
-                                <button
-                                    type="button"
-                                    class="px-2 py-1 rounded-full border
-                                        {filtroMotivoElim === 'competencia'
-                                            ? 'bg-red-700 text-gray-900 border-red-500'
-                                            : 'bg-transparent text-gray-800 border-red-700 hover:bg-red-800/20'}"
-                                    on:click={() => filtroMotivoElim = 'competencia'}
-                                >
-                                    Competencia ({conteosMotivo.competencia})
-                                </button>
-                            </div>
-
-                            <ul class="space-y-2">
-                                {#each clientesEliminados as c (c.id)}
-                                    <li class="bg-gray-50 border border-gray-300 rounded-lg p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                                        <div>
-                                            <div class="flex items-center gap-2">
-                                                <span class="font-semibold">{c.nombre}</span>
-                                                <span class="px-2 py-0.5 text-xs rounded-full bg-red-800 text-white">
-                                                    eliminado
-                                                </span>
-                                            </div>
-                                            <p class="text-xs text-gray-500">
-                                                {#if c.diaEntrega}Día: {c.diaEntrega} • {/if}
-                                                Orden anterior: {c.orden ?? '-'}
-                                            </p>
-                                            <p class="text-xs text-gray-500 mt-1">
-                                                Motivo: {c.motivoBaja ?? '—'}
-                                            </p>
-                                        </div>
-                                        <div class="text-xs text-gray-500">
-                                            Fecha baja: {safeTime(c.fechaBaja)}
-                                        </div>
-                                    </li>
-                                {/each}
-                            </ul>
-                        </div>
-                    {/if}
                 </section>
             </div>
+
+            {#if clientesEliminadosBase.length}
+                <div class="max-w-5xl mx-auto px-4 pb-6">
+                    <section class="bg-white border border-red-700/60 rounded-lg mt-4 overflow-hidden">
+                        <!-- "Acordeon" -->
+                        <button
+                            type="button"
+                            class="w-full flex items-center justify-between px-4 py-3 text-sm"
+                            on:click={() => (mostrarEliminados = !mostrarEliminados)}
+                        >
+                            <div class="flex items-center gap-2">
+                                <h2 class="font-semibold text-red-500">
+                                    Clientes eliminados
+                                </h2>
+                                <span class="text-xs px-2 py-0.5 rounded-full bg-red-800 text-white">
+                                    {clientesEliminadosBase.length}
+                                </span>
+                            </div>
+                            <span class="text-gray-500 text-lg">
+                                {mostrarEliminados ? '▾' : '▸'}
+                            </span>
+                        </button>
+
+                        {#if mostrarEliminados}
+                            <div class="border-t border-red-700/60 p-4 max-h-80 overflow-y-auto">
+                                <!-- Filtros por motivo -->
+                                <div class="flex flex-wrap items-center gap-2 mb-3 text-xs">
+                                    <span class="text-gray-700 mr-1">Motivo:</span>
+
+                                    <button
+                                        type="button"
+                                        class="px-2 py-1 rounded-full border
+                                            {filtroMotivoElim === 'todos'
+                                                ? 'bg-red-700 text-white border-red-500'
+                                                : 'bg-transparent text-gray-800 border-red-700 hover:bg-red-800/20'}"
+                                        on:click={() => filtroMotivoElim = 'todos'}
+                                    >
+                                        Todos ({clientesEliminadosBase.length})
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        class="px-2 py-1 rounded-full border
+                                            {filtroMotivoElim === 'mala_atencion'
+                                                ? 'bg-red-700 text-gray-900 border-red-500'
+                                                : 'bg-transparent text-gray-800 border-red-700 hover:bg-red-800/20'}"
+                                        on:click={() => filtroMotivoElim = 'mala_atencion'}
+                                    >
+                                        Mala atención ({conteosMotivo.mala_atencion})
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        class="px-2 py-1 rounded-full border
+                                            {filtroMotivoElim === 'mala_calidad'
+                                                ? 'bg-red-700 text-gray-900 border-red-500'
+                                                : 'bg-transparent text-gray-800 border-red-700 hover:bg-red-800/20'}"
+                                        on:click={() => filtroMotivoElim = 'mala_calidad'}
+                                    >
+                                        Mala calidad ({conteosMotivo.mala_calidad})
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        class="px-2 py-1 rounded-full border
+                                            {filtroMotivoElim === 'costo_elevado'
+                                                ? 'bg-red-700 text-gray-900 border-red-500'
+                                                : 'bg-transparent text-gray-800 border-red-700 hover:bg-red-800/20'}"
+                                        on:click={() => filtroMotivoElim = 'costo_elevado'}
+                                    >
+                                        Costo elevado ({conteosMotivo.costo_elevado})
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        class="px-2 py-1 rounded-full border
+                                            {filtroMotivoElim === 'competencia'
+                                                ? 'bg-red-700 text-gray-900 border-red-500'
+                                                : 'bg-transparent text-gray-800 border-red-700 hover:bg-red-800/20'}"
+                                        on:click={() => filtroMotivoElim = 'competencia'}
+                                    >
+                                        Competencia ({conteosMotivo.competencia})
+                                    </button>
+                                </div>
+
+                                <ul class="space-y-2">
+                                    {#each clientesEliminados as c (c.id)}
+                                        <li class="bg-gray-50 border border-gray-300 rounded-lg p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                                            <div>
+                                                <div class="flex items-center gap-2">
+                                                    <span class="font-semibold">{c.nombre}</span>
+                                                    <span class="px-2 py-0.5 text-xs rounded-full bg-red-800 text-white">
+                                                        eliminado
+                                                    </span>
+                                                </div>
+                                                <p class="text-xs text-gray-500">
+                                                    {#if c.diaEntrega}Día: {c.diaEntrega} • {/if}
+                                                    Orden anterior: {c.orden ?? '-'}
+                                                </p>
+                                                <p class="text-xs text-gray-500 mt-1">
+                                                    Motivo: {c.motivoBaja ?? '—'}
+                                                </p>
+                                            </div>
+                                            <div class="text-xs text-gray-500">
+                                                Fecha baja: {safeTime(c.fechaBaja)}
+                                            </div>
+                                        </li>
+                                    {/each}
+                                </ul>
+                            </div>
+                        {/if}
+                    </section>
+                </div>
+            {/if}
+        {:else}
+            <VistaRepartidor {abrirEmpezarDia} bind:filtroDia={filtroDia} bind:dia={filtroDia}/>
         {/if}
     {:else if vista === 'estadisticas'}
         <!-- ESTADISTICAS -->

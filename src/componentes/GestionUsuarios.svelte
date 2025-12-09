@@ -3,7 +3,7 @@
     import { db, auth } from '../firebase'; // Ajusta tu ruta
     import { collection, getDocs, doc, updateDoc, setDoc } from 'firebase/firestore';
     import { createUserWithEmailAndPassword, getAuth, signOut } from 'firebase/auth';
-  import { deleteApp, initializeApp } from 'firebase/app';
+    import { deleteApp, initializeApp } from 'firebase/app';
 
     let usuarios = [];
     let loading = true;
@@ -63,7 +63,7 @@
             await setDoc(doc(db, "usuarios", user.uid), {
                 email: user.email,
                 active: true,
-                role: 'user',
+                role: 'repartidor',
                 createdAt: new Date().toISOString()
             });
 
