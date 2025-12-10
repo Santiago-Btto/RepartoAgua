@@ -848,7 +848,7 @@
         on:crear={handleCrearCliente}
         on:cerrar={() => {
             clienteACrear = false;
-            // si veníamos desde Empezar Día, lo reabrimos
+            // si venimos desde Empezar Día, lo reabrimos
             if (volverALaRuta) {
                 mostrarEmpezar = true;
                 volverALaRuta = false;
