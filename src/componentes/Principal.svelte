@@ -15,7 +15,9 @@
     import EmpezarDia from './EmpezarDia.svelte';
     import { logOut, user } from '../store/userStore.js';
     import GestionUsuarios from './GestionUsuarios.svelte';
-  import VistaRepartidor from './VistaRepartidor.svelte';
+    import VistaRepartidor from './VistaRepartidor.svelte';
+    import Graficos from './Graficos.svelte';
+
 
     // vista actual
     let vista = 'clientes';          // 'clientes' | 'estadisticas'
@@ -581,6 +583,17 @@
                         {#if isAdmin}
                             <button 
                                 class="w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-gray-50
+                                {vista === 'graficos' ? 'text-blue-600 font-semibold bg-blue-50' : 'text-gray-700'}"
+                                on:click={() => navegar('graficos')}
+                            >
+                                <span>📈</span> Gráficos
+                            </button>
+                        {/if}
+
+
+                        {#if isAdmin}
+                            <button 
+                                class="w-full text-left px-4 py-2 text-sm flex items-center gap-2 hover:bg-gray-50
                                 {vista === 'usuarios' ? 'text-blue-600 font-semibold bg-blue-50' : 'text-gray-700'}"
                                 on:click={() => navegar('usuarios')}
                             >
@@ -812,6 +825,8 @@
     {:else if vista === 'estadisticas'}
         <!-- ESTADISTICAS -->
         <Estadisticas />
+    {:else if vista === 'graficos'}
+        <Graficos />            
     {:else if vista === 'usuarios'}
         <GestionUsuarios />
     {/if}
