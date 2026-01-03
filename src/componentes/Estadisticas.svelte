@@ -201,6 +201,9 @@
         (acc, g) => acc + (Number(g.gastoExtra) || 0),
         0
     );
+    $: cajonesSif = Math.floor(totalSif / 6); // cajones de sifones (6 por cajon)
+    $: restoSif   = totalSif % 6;
+
 
     // total de gastos del periodo / día
     $: totalGastos = totalGastoAgua + totalGastoSoda + totalGastoCombustible + totalGastoExtra;
@@ -344,14 +347,27 @@
 
        <!-- Totales de unidades -->
     <section class="bg-white border border-gray-300 rounded-lg p-3">
-        <h3 class="text-sm font-semibold text-gray-800 mb-2">Unidades entregadas</h3>
-        <p class="text-sm text-gray-700">
-            20L: <span class="font-semibold">{total20}</span> &nbsp;•&nbsp;
-            12L: <span class="font-semibold">{total12}</span> &nbsp;•&nbsp;
-            Sifones: <span class="font-semibold">{totalSif}</span> &nbsp;•&nbsp;
-            Jugos o Amargos: <span class="font-semibold">{totalDisp}</span>
-        </p>
+    <h3 class="text-sm font-semibold text-gray-800 mb-2">Unidades entregadas</h3>
+    <p class="text-sm text-gray-700">
+        20L: <span class="font-semibold">{total20}</span> &nbsp;•&nbsp;
+        12L: <span class="font-semibold">{total12}</span> &nbsp;•&nbsp;
+        Sifones: 
+        <span class="font-semibold">
+            {totalSif} sifones
+            {#if totalSif > 0}
+                (
+                {cajonesSif} cajones
+                {#if restoSif > 0}
+                    y {restoSif} sifones
+                {/if}
+                )
+            {/if}
+        </span>
+        &nbsp;•&nbsp;
+        Jugos o Amargos: <span class="font-semibold">{totalDisp}</span>
+    </p>
     </section>
+
 
         <!-- Medios de pago --> 
     <section class="bg-white border border-gray-300 rounded-lg p-3">
