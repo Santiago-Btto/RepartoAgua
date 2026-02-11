@@ -13,6 +13,8 @@
         precioDisp: 0
     };
 
+    export let rastrillosPendientes = [];
+
     export let startIndex = 0; // indice inicial dentro de la ruta
     let index = 0;            // índice del cliente actual
 
@@ -50,6 +52,17 @@
     $: total = clientes?.length ?? 0;
     $: clienteActual = clientes?.[index] ?? null;
     $: esUltimo = index >= total - 1;
+
+    // mapa: clienteId -> rastrilloDocId
+    $: rastrilloMap = (rastrillosPendientes || []).reduce((acc, r) => {
+    if (r?.clienteId && r?.id) acc[r.clienteId] = r.id;
+    return acc;
+    }, {});
+
+    // si el cliente actual tiene rastrillo pendiente, se atiende como rastrillo
+    $: rastrilloActualId = clienteActual ? (rastrilloMap[clienteActual.id] || null) : null;
+    $: modoRastrillo = !!rastrilloActualId;
+
 
     // cuando CAMBIA de cliente, copiamos datos e inicializamos entrega UNA vez
     $: if (clienteActual && clienteActual.id !== ultimoIdCliente) {
@@ -159,25 +172,34 @@
                                'pendiente';
 
         const payload = {
-            clienteId: clienteActual.id,
-            nombreCliente: clienteActual.nombre,
-            diaRuta: clienteActual.diaEntrega,
-            entregado20: q20,
-            entregado12: q12,
-            entregadoSif: qSif,
-            entregadoDisp: qDisp,
-            precio20: p20,
-            precio12: p12,
-            precioSif: pSif,
-            precioDisp: pDisp,
-            montoTotal: total,
-            montoCobrado: cobrado,
-            medioPago: entrega.medioPago || 'efectivo',
-            estadoPago,
-            notasEntrega: entrega.notasEntrega || ''
-        };
+        clienteId: clienteActual.id,
+        nombreCliente: clienteActual.nombre,
+        diaRuta: clienteActual.diaEntrega,
+        entregado20: q20,
+        entregado12: q12,
+        entregadoSif: qSif,
+        entregadoDisp: qDisp,
+        precio20: p20,
+        precio12: p12,
+        precioSif: pSif,
+        precioDisp: pDisp,
+        montoTotal: total,
+        montoCobrado: cobrado,
+        medioPago: entrega.medioPago || 'efectivo',
+        estadoPago,
+        notasEntrega: entrega.notasEntrega || '',
+        modoAtencion: modoRastrillo ? 'rastrillo' : 'normal',
+        rastrilloId: rastrilloActualId
+    };
+
 
         dispatch('registrarEntrega', payload);
+
+        // si se atendio en modo rastrillo, se marcao resuelto
+        if (modoRastrillo && rastrilloActualId) {
+            dispatch('resolverRastrillo', { id: rastrilloActualId });
+        }
+
 
         recaudadoRecorrido += cobrado;
 
@@ -299,11 +321,39 @@
             <!-- Info cliente + stock -->
             <div class="grid gap-3 overflow-y-auto max-h-[60vh] pr-1">
                 <div class="flex items-center gap-2">
-                    <h3 class="text-2xl font-bold">{clienteActual.nombre}</h3>
-                    <span class="ml-1 px-2 py-0.5 text-xs rounded-full {clienteActual.estado === 'activo' ? 'bg-green-700 text-green-100' : 'bg-yellow-700 text-yellow-100'}">
-                        {clienteActual.estado}
-                    </span>
-                </div>
+    <h3 class="text-2xl font-bold">{clienteActual.nombre}</h3>
+
+    <span class="ml-1 px-2 py-0.5 text-xs rounded-full {clienteActual.estado === 'activo' ? 'bg-green-700 text-green-100' : 'bg-yellow-700 text-yellow-100'}">
+        {clienteActual.estado}
+    </span>
+
+    {#if !modoRastrillo}
+        <button
+            type="button"
+            class="ml-2 px-4 py-0.5 rounded-md text-xs bg-amber-200 hover:bg-amber-300 text-gray-900"
+            on:click={() => {
+                if (!clienteActual) return;
+                dispatch('marcarRastrillo', clienteActual);
+                if (!esUltimo) index += 1;
+                else cerrar();
+            }}
+        >
+            🧹
+        </button>
+    {:else}
+        <button
+            type="button"
+            class="ml-2 px-4 py-0.5 rounded-md text-xs bg-gray-200 hover:bg-gray-300 text-gray-900"
+            on:click={() => {
+                if (!rastrilloActualId) return;
+                dispatch('resolverRastrillo', { id: rastrilloActualId });
+            }}
+        >
+            ✅
+        </button>
+    {/if}
+</div>
+
 
                 <div class="text-sm text-gray-700">
                     {#if clienteActual.direccion}{clienteActual.direccion}{/if}
@@ -330,6 +380,7 @@
                         >
                             ➕ Agregar cliente
                         </button>
+
                     </div>
                 </div>
 
@@ -421,6 +472,44 @@
                 </div>
             </div>
         {/if}
+
+        {#if (rastrillosPendientes?.length || 0) > 0}
+  <div class="mt-4 border-t border-gray-300 pt-3">
+    <div class="flex items-center justify-between mb-2">
+      <span class="text-sm font-semibold text-gray-800">
+        pendientes rastrillo ({rastrillosPendientes.length})
+      </span>
+      <span class="text-xs text-gray-500">
+        del dia actual
+      </span>
+    </div>
+
+    <div class="grid gap-2 max-h-40 overflow-y-auto pr-1">
+      {#each rastrillosPendientes as r (r.id)}
+        <div class="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+          <div class="min-w-0">
+            <div class="text-sm font-semibold truncate">{r.nombreCliente}</div>
+            <div class="text-xs text-gray-600 truncate">
+              {r.direccion}{r.zona ? ` • ${r.zona}` : ''}
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="ml-3 px-3 py-1 rounded-md text-xs bg-amber-200 hover:bg-amber-300 text-gray-900 whitespace-nowrap"
+            on:click={() => {
+              const i = clientes.findIndex(c => c.id === r.clienteId);
+              if (i >= 0) index = i;
+            }}
+          >
+            ir
+          </button>
+        </div>
+      {/each}
+    </div>
+  </div>
+{/if}
+
 
                 <!-- ENTREGA DEL DIA -->
                 <div class="mt-4 border-t border-gray-300 pt-3 grid grid-cols-2 gap-3">

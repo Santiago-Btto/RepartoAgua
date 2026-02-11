@@ -2,10 +2,10 @@
     import { onMount } from 'svelte';
     import { db } from '../firebase.js';
     import {
-        collection, onSnapshot, doc,
-        serverTimestamp, query, orderBy,
-        getDocs, where, writeBatch, addDoc,
-        getDoc, setDoc
+    collection, onSnapshot, doc,
+    serverTimestamp, query, orderBy,
+    getDocs, where, writeBatch, addDoc,
+    getDoc, setDoc, updateDoc, deleteDoc
     } from "firebase/firestore";
     import Estadisticas from './Estadisticas.svelte';
     import FormCrear from './FormCrear.svelte';
@@ -17,6 +17,7 @@
     import GestionUsuarios from './GestionUsuarios.svelte';
     import VistaRepartidor from './VistaRepartidor.svelte';
     import Graficos from './Graficos.svelte';
+    
 
 
     // vista actual
@@ -26,6 +27,7 @@
     let mostrarEmpezar = false;
     let clientesDelDia = [];
     let menu = false;
+    let rastrillosPendientes = [];
     
     $: isAdmin = $user.role === 'admin';
 
@@ -57,6 +59,18 @@
 
     // filtro de motivo para eliminados
     let filtroMotivoElim = 'todos';
+
+    // rastrillos del dia (pendientes) mientras recorrido abierto
+    let rastrillosDelDia = [];
+    let unsubRastrillos = null;
+
+    function fechaDiaKey(d = new Date()) {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`; 
+    }
+
 
     const dias = ["lunes", "martes", "miercoles", "jueves", "viernes", "sabado", "domingo"];
 
@@ -152,23 +166,46 @@
         }
     }
 
-    // -------- Live sync --------
-    onMount(() => {
-        const q = query(collection(db, 'clientes'), orderBy('nombre'));
-        const unsubscribe = onSnapshot(q, (snap) => {
-            setSync('🔄 Sincronizando...');
-            clientesCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-            setTimeout(() => setSync(''), 800);
-        });
-
-        window.addEventListener('online', () => setSync('Conectado • sincronizando...'));
-        window.addEventListener('offline', () => setSync('Sin conexión (modo offline)'));
-
-        // carga config de precios
-        cargarPrecios();
-
-        return unsubscribe;
+// -------- Live sync --------
+onMount(() => {
+    const q = query(collection(db, 'clientes'), orderBy('nombre'));
+    const unsubscribe = onSnapshot(q, (snap) => {
+        setSync('🔄 Sincronizando...');
+        clientesCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        setTimeout(() => setSync(''), 800);
     });
+
+    window.addEventListener('online', () => setSync('Conectado • sincronizando...'));
+    window.addEventListener('offline', () => setSync('Sin conexión (modo offline)'));
+
+    // carga config de precios
+    cargarPrecios();
+
+    // rastrillos pendientes del dia actual 
+    const diaKey = (() => {
+        const d = new Date();
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+    })();
+
+    const qRas = query(
+        collection(db, 'rastrillos'),
+        where('diaKey', '==', diaKey),
+        where('estado', '==', 'pendiente')
+    );
+
+    const unsubscribeRastrillos = onSnapshot(qRas, (snap) => {
+        rastrillosPendientes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    });
+
+    return () => {
+        unsubscribe();
+        unsubscribeRastrillos();
+    };
+});
+
 
     async function handleRefresh() {
         setSync('🔄 Actualizando...');
@@ -312,6 +349,20 @@
                 ...data,
                 fecha: serverTimestamp()
             });
+
+        // si fue atendido como rastrillo, lo cierro
+        if (data?.modoAtencion === 'rastrillo' && data?.rastrilloId) {
+            try {
+                await setDoc(
+                doc(db, 'rastrillos', data.rastrilloId),
+                { estado: 'resuelto', resueltoEn: serverTimestamp() },
+                { merge: true }
+                );
+            } catch (e) {
+                console.error('[rastrillo] no pude resolver', e);
+            }
+        }
+
             toast('Entrega registrada ✔');
 
             // si estoy editando ese cliente, recargo su historial
@@ -508,6 +559,23 @@
             return;
         }
 
+        if (unsubRastrillos) { unsubRastrillos(); unsubRastrillos = null; }
+
+        const hoy = fechaDiaKey();
+
+        const qRas = query(
+        collection(db, 'rastrillos'),
+        where('diaRuta', '==', filtroDia),
+        where('fechaDia', '==', hoy),
+        where('estado', '==', 'pendiente'),
+        orderBy('creadoEn', 'asc')
+        );
+
+        unsubRastrillos = onSnapshot(qRas, (snap) => {
+        rastrillosDelDia = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        });
+
+
         indiceRutaActual = 0; // cuando se abre el recorrido arranca en el primer cliente
         mostrarEmpezar = true;
     }
@@ -524,6 +592,16 @@
         clienteACrear = true;
     }
 
+    
+    function hoyKey() {
+        const d = new Date();
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+    }
+
+
 
     // abrir modal de edicion y cargar historial del cliente
     async function handleEditarCliente(e) {
@@ -531,6 +609,68 @@
         clienteAEditar = c;
         await cargarHistorialCliente(c.id);
     }
+
+    async function marcarRastrillo(cliente) {
+        try {
+            const diaKey = hoyKey();
+            // evita duplicados para el mismo cliente en el mismo dia
+            const qDup = query(
+            collection(db, 'rastrillos'),
+            where('diaKey', '==', diaKey),
+            where('clienteId', '==', cliente.id),
+            where('estado', '==', 'pendiente')
+            );
+            const dup = await getDocs(qDup);
+            if (!dup.empty) return; // ya existe
+
+            await addDoc(collection(db, 'rastrillos'), {
+            diaKey,
+            estado: 'pendiente',
+            clienteId: cliente.id,
+            nombreCliente: cliente.nombre || '',
+            direccion: cliente.direccion || '',
+            zona: cliente.zona || '',
+            diaRuta: cliente.diaEntrega || '',
+            creadoEn: serverTimestamp()
+            });
+
+            toast('rastrillo guardado');
+        } catch (err) {
+            console.error('[rastrillo] error', err);
+            alert('no se pudo guardar el rastrillo');
+        }
+    }   
+
+    async function quitarRastrillo(rastrilloId) {
+        try {
+            await deleteDoc(doc(db, 'rastrillos', rastrilloId));
+            toast('rastrillo quitado');
+        } catch (err) {
+            console.error('[rastrillo] error quitar', err);
+            alert('no se pudo quitar el rastrillo');
+        }
+}
+
+async function handleResolverRastrillo(e) {
+    const { id } = e.detail || {};
+    if (!id) return;
+
+    try {
+        await setDoc(
+            doc(db, 'rastrillos', id),
+            { estado: 'resuelto', resueltoEn: serverTimestamp() },
+            { merge: true }
+        );
+        toast('rastrillo quitado');
+    } catch (err) {
+        console.error('[rastrillo] error resolver', err);
+        alert('no se pudo quitar el rastrillo');
+    }
+}
+
+
+
+
 
 </script>
 
@@ -867,15 +1007,18 @@
 
 {#if mostrarEmpezar}
     <EmpezarDia
-        clientes={clientesDelDia}
-        preciosBase={preciosBase}
-        startIndex={indiceRutaActual}
-        on:cerrar={() => (mostrarEmpezar = false)}
-        on:guardar={handleGuardarEdicion}
-        on:registrarEntrega={handleRegistrarEntrega}
-        on:agregarCliente={handleAgregarClienteDesdeRuta}
-        on:editar={handleEditarCliente}
-        on:registrarGastoRecorrido={handleRegistrarGastoRecorrido}
-    />
-{/if}
+  clientes={clientesDelDia}
+  preciosBase={preciosBase}
+  startIndex={indiceRutaActual}
+  rastrillosPendientes={rastrillosPendientes}
+  on:resolverRastrillo={handleResolverRastrillo}
+  on:marcarRastrillo={(e) => marcarRastrillo(e.detail)}
+  on:cerrar={() => (mostrarEmpezar = false)}
+  on:guardar={handleGuardarEdicion}
+  on:registrarEntrega={handleRegistrarEntrega}
+  on:agregarCliente={handleAgregarClienteDesdeRuta}
+  on:editar={handleEditarCliente}
+  on:registrarGastoRecorrido={handleRegistrarGastoRecorrido}
+/>
 
+{/if}
